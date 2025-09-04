@@ -106,6 +106,13 @@ git push origin feature/your-feature
 - **Create merge commit** for release branches
 - **Rebase and merge** for clean history (if preferred)
 
+### **5. Branch Protection Rules**
+
+- **main branch**: Requires 1 approval + code owner review + all CI checks
+- **develop branch**: Requires 1 approval + basic CI checks
+- **No direct pushes** to protected branches
+- **No force pushes** or deletions allowed
+
 ## 🧪 **Testing Requirements**
 
 ### **Backend Testing**
@@ -255,6 +262,21 @@ git push --force origin develop  # Wrong!
 ```
 
 ## 🛠️ **Development Tools Setup**
+
+### **Branch Protection Setup**
+```bash
+# Option 1: Run the setup script (recommended)
+./setup_branch_protection.sh          # macOS/Linux
+setup_branch_protection.bat           # Windows
+
+# Option 2: Manual setup via GitHub web interface
+# Go to: https://github.com/CarlosCardonaM/voice-ai-agent/settings/branches
+# Add rule for 'main' branch with:
+# - Require pull request reviews before merging
+# - Require 1 approving review
+# - Require review from code owners
+# - Require status checks to pass before merging
+```
 
 ### **Pre-commit Hooks**
 

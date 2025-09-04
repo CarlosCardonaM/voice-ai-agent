@@ -1,0 +1,33 @@
+# Global code owners for the entire repository
+* @CarlosCardonaM
+
+# Backend Python code
+*.py @CarlosCardonaM
+twilio_voice_agent.py @CarlosCardonaM
+requirements.txt @CarlosCardonaM
+
+# Frontend React code
+frontend/src/ @CarlosCardonaM
+frontend/package.json @CarlosCardonaM
+frontend/package-lock.json @CarlosCardonaM
+
+# Documentation
+*.md @CarlosCardonaM
+docs/ @CarlosCardonaM
+QUICK_START.md @CarlosCardonaM
+
+# Configuration files
+.env.example @CarlosCardonaM
+.gitignore @CarlosCardonaM
+.pre-commit-config.yaml @CarlosCardonaM
+
+# GitHub Actions and workflows
+.github/ @CarlosCardonaM
+.github/workflows/ @CarlosCardonaM
+.github/pull_request_template.md @CarlosCardonaM
+
+# Scripts
+*.sh @CarlosCardonaM
+*.bat @CarlosCardonaM
+setup_and_test.sh @CarlosCardonaM
+setup_and_test.bat @CarlosCardonaM
