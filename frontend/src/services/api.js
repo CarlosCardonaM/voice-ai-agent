@@ -21,7 +21,7 @@ class VoiceAIApiService {
       };
 
       const response = await fetch(url, config);
-      
+
       if (!response.ok) {
         throw new Error(`API Error: ${response.status} ${response.statusText}`);
       }
@@ -52,32 +52,32 @@ class VoiceAIApiService {
   // Test API Connections
   async testApiConnections(apiKeys) {
     const results = {};
-    
+
     try {
       // Test OpenAI
       if (apiKeys.openai) {
         results.openai = await this.testOpenAI(apiKeys.openai);
       }
-      
+
       // Test ElevenLabs
       if (apiKeys.elevenlabs) {
         results.elevenlabs = await this.testElevenLabs(apiKeys.elevenlabs);
       }
-      
+
       // Test Deepgram
       if (apiKeys.deepgram) {
         results.deepgram = await this.testDeepgram(apiKeys.deepgram);
       }
-      
+
       // Test Twilio
       if (apiKeys.twilio) {
         results.twilio = await this.testTwilio(apiKeys.twilio);
       }
-      
+
     } catch (error) {
       console.error('API Connection Test Error:', error);
     }
-    
+
     return results;
   }
 
@@ -89,7 +89,7 @@ class VoiceAIApiService {
           'Authorization': `Bearer ${apiKey}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         return {
@@ -119,7 +119,7 @@ class VoiceAIApiService {
           'xi-api-key': apiKey,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         return {
@@ -149,7 +149,7 @@ class VoiceAIApiService {
           'Authorization': `Token ${apiKey}`,
         },
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         return {
@@ -201,7 +201,7 @@ class VoiceAIApiService {
           'Authorization': `Basic ${btoa(`${accountSid}:${authToken}`)}`,
         },
       });
-      
+
       if (response.ok) {
         return {
           status: 'success',
@@ -223,7 +223,7 @@ class VoiceAIApiService {
 
   // Start Test Call
   async startTestCall(testConfig) {
-    return this.apiCall('/api/test/start', {
+    return this.apiCall('/test-call', {
       method: 'POST',
       body: JSON.stringify(testConfig),
     });
@@ -232,6 +232,14 @@ class VoiceAIApiService {
   // Get Test Results
   async getTestResults(testId) {
     return this.apiCall(`/api/test/results/${testId}`);
+  }
+
+  // End Test Call
+  async endTestCall(callSid) {
+    return this.apiCall('/end-test-call', {
+      method: 'POST',
+      body: JSON.stringify({ call_sid: callSid }),
+    });
   }
 
   // Update Agent Configuration

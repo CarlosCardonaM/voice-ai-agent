@@ -64,7 +64,7 @@ function Testing() {
     try {
       // Start test call
       const testResponse = await apiService.startTestCall(testConfig);
-      
+
       // Simulate test progress
       const interval = setInterval(() => {
         setProgress(prev => {
@@ -87,12 +87,12 @@ function Testing() {
       setTimeout(async () => {
         clearInterval(interval);
         setProgress(100);
-        
+
         try {
           // Get test results
           const results = await apiService.getTestResults(testResponse.testId || 'test-123');
           setTestResults(results);
-          
+
           setTestLogs(prev => [
             ...prev,
             { time: new Date().toLocaleTimeString(), message: 'Test completed successfully', type: 'success' },
@@ -114,7 +114,7 @@ function Testing() {
             ],
           });
         }
-        
+
         setIsRunning(false);
       }, 10000);
 
@@ -132,6 +132,59 @@ function Testing() {
       ...prev,
       { time: new Date().toLocaleTimeString(), message: 'Test stopped by user', type: 'warning' },
     ]);
+  };
+
+  const startRealCall = async () => {
+    if (!testConfig.phoneNumber) {
+      setError('Please enter a phone number');
+      return;
+    }
+
+    try {
+      setError(null);
+      const response = await apiService.startTestCall({ phone_number: testConfig.phoneNumber });
+
+      if (response.status === 'success') {
+        setTestConfig(prev => ({
+          ...prev,
+          activeCallSid: response.call_sid
+        }));
+
+        setTestLogs(prev => [
+          ...prev,
+          { time: new Date().toLocaleTimeString(), message: `Real call started: ${response.call_sid}`, type: 'success' },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error starting real call:', error);
+      setError('Failed to start real call. Please check your backend connection.');
+    }
+  };
+
+  const endRealCall = async () => {
+    if (!testConfig.activeCallSid) {
+      setError('No active call to end');
+      return;
+    }
+
+    try {
+      const response = await apiService.endTestCall(testConfig.activeCallSid);
+
+      if (response.status === 'success') {
+        setTestConfig(prev => ({
+          ...prev,
+          activeCallSid: null
+        }));
+
+        setTestLogs(prev => [
+          ...prev,
+          { time: new Date().toLocaleTimeString(), message: `Real call ended: ${testConfig.activeCallSid}`, type: 'info' },
+        ]);
+      }
+    } catch (error) {
+      console.error('Error ending real call:', error);
+      setError('Failed to end real call. Please check your backend connection.');
+    }
   };
 
   const getTestStatusColor = (status) => {
@@ -269,6 +322,59 @@ function Testing() {
           </Card>
         </Grid>
 
+        {/* Real Phone Testing */}
+        <Grid item xs={12} md={4}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" component="h3" gutterBottom>
+                📞 Real Phone Testing
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                Test with your actual phone number
+              </Typography>
+
+              <TextField
+                fullWidth
+                label="Phone Number"
+                placeholder="+15551234567"
+                value={testConfig.phoneNumber || ''}
+                onChange={(e) => handleConfigChange('phoneNumber', e.target.value)}
+                sx={{ mb: 3 }}
+              />
+
+              <Button
+                variant="contained"
+                color="success"
+                startIcon={<PlayIcon />}
+                onClick={startRealCall}
+                fullWidth
+                sx={{ mb: 2 }}
+              >
+                Start Real Call
+              </Button>
+
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<StopIcon />}
+                onClick={endRealCall}
+                fullWidth
+                disabled={!testConfig.activeCallSid}
+              >
+                End Call
+              </Button>
+
+              {testConfig.activeCallSid && (
+                <Box sx={{ mt: 2, p: 2, bgcolor: 'success.light', borderRadius: 1 }}>
+                  <Typography variant="body2" color="success.contrastText">
+                    Active Call: {testConfig.activeCallSid}
+                  </Typography>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
+        </Grid>
+
         {/* Test Progress & Results */}
         <Grid item xs={12} md={8}>
           <Card>
@@ -293,7 +399,7 @@ function Testing() {
                   <Typography variant="subtitle1" gutterBottom>
                     Test Results
                   </Typography>
-                  
+
                   <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={6} md={3}>
                       <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
@@ -365,7 +471,7 @@ function Testing() {
               <Typography variant="subtitle1" gutterBottom>
                 Test Logs
               </Typography>
-              
+
               <Box sx={{ maxHeight: 300, overflowY: 'auto', bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
                 {testLogs.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
@@ -380,16 +486,16 @@ function Testing() {
                           secondary={log.time}
                           primaryTypographyProps={{
                             variant: 'body2',
-                            color: log.type === 'error' ? 'error.main' : 
-                                   log.type === 'warning' ? 'warning.main' : 
+                            color: log.type === 'error' ? 'error.main' :
+                                   log.type === 'warning' ? 'warning.main' :
                                    log.type === 'success' ? 'success.main' : 'text.primary',
                           }}
                         />
                         <Chip
                           label={log.type}
                           size="small"
-                          color={log.type === 'error' ? 'error' : 
-                                 log.type === 'warning' ? 'warning' : 
+                          color={log.type === 'error' ? 'error' :
+                                 log.type === 'warning' ? 'warning' :
                                  log.type === 'success' ? 'success' : 'default'}
                           variant="outlined"
                         />
