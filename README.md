@@ -14,7 +14,7 @@
 # Backend
 source venv/bin/activate && python twilio_voice_agent.py
 
-# Frontend  
+# Frontend
 cd frontend && npm start
 
 # Access
@@ -99,6 +99,234 @@ docs/
 - [ ] Test real phone calls
 - [ ] Understand basic workflow
 
+---
+
+## 🤝 **Team Workflow**
+
+### **🎯 Development Process**
+
+#### **1. Starting a New Feature**
+```bash
+# Always start from the develop branch
+git checkout develop
+git pull origin develop
+
+# Create a feature branch with descriptive name
+git checkout -b feature/voice-agent-enhancement
+# or
+git checkout -b fix/cors-issue
+# or
+git checkout -b docs/api-documentation
+```
+
+#### **2. Development Workflow**
+```bash
+# Make your changes and commit frequently
+git add .
+git commit -m "feat(voice): add Brazilian Portuguese voice support"
+
+# Push your feature branch
+git push origin feature/voice-agent-enhancement
+```
+
+#### **3. Creating a Pull Request**
+1. **Go to GitHub**: `https://github.com/CarlosCardonaM/voice-ai-agent`
+2. **Click "Compare & pull request"** on your feature branch
+3. **Fill out the PR template completely**:
+   - ✅ Description of changes
+   - ✅ Type of change selected
+   - ✅ Testing checklist completed
+   - ✅ Self-review completed
+4. **Request review** from team members
+
+#### **4. Code Review Process**
+- **At least 1 approval required** before merging
+- **Code owner review required** for main branch
+- **All CI checks must pass** (automated)
+- **Address feedback** and update PR if needed
+
+#### **5. Merging and Deployment**
+- **Feature branches**: Squash and merge to develop
+- **Release branches**: Create merge commit to main
+- **Automatic deployment** to staging on develop
+- **Production deployment** on main (after testing)
+
+### **🛡️ Quality Gates**
+
+#### **Pre-commit Hooks (Automatic)**
+- ✅ Code formatting (Black, isort)
+- ✅ Linting (Flake8)
+- ✅ Security scanning (Bandit)
+- ✅ YAML validation
+- ✅ Trailing whitespace fixes
+
+#### **CI/CD Pipeline (Automatic)**
+- ✅ **Backend Testing**: Python 3.9, 3.10, 3.11
+- ✅ **Frontend Testing**: React build and tests
+- ✅ **Integration Testing**: API endpoint validation
+- ✅ **Security Scanning**: Vulnerability detection
+- ✅ **Code Quality**: SonarCloud analysis
+
+#### **Manual Requirements**
+- ✅ **Code Review**: At least 1 team member approval
+- ✅ **Self-review**: Complete PR template checklist
+- ✅ **Documentation**: Update relevant docs
+- ✅ **Testing**: Manual testing completed
+
+### **🌿 Branch Strategy**
+
+```
+main (production)
+├── develop (staging)
+│   ├── feature/voice-enhancement
+│   ├── fix/cors-issue
+│   └── docs/api-update
+└── hotfix/critical-bug
+```
+
+- **`main`**: Production-ready code (deploy to production)
+- **`develop`**: Integration branch (deploy to staging)
+- **`feature/*`**: New features and improvements
+- **`fix/*`**: Bug fixes
+- **`hotfix/*`**: Critical production fixes
+
+### **📝 Commit Standards**
+
+#### **Conventional Commits Format**
+```bash
+type(scope): description
+
+# Examples:
+feat(voice): add Brazilian Portuguese voice support
+fix(api): resolve CORS issue with frontend
+docs(setup): update installation instructions
+test(performance): add latency monitoring tests
+refactor(backend): restructure Twilio agent class
+style(frontend): improve dashboard UI layout
+```
+
+#### **Commit Types**
+- `feat` - New feature
+- `fix` - Bug fix
+- `docs` - Documentation changes
+- `style` - Code style/formatting
+- `refactor` - Code refactoring
+- `test` - Adding/updating tests
+- `chore` - Maintenance tasks
+
+### **🔒 Security & Compliance**
+
+#### **Never Commit**
+- ❌ API keys or secrets
+- ❌ Real phone numbers
+- ❌ Database credentials
+- ❌ Private certificates
+- ❌ User data or PII
+
+#### **Always Include**
+- ✅ Environment variable templates (`.env.example`)
+- ✅ Comprehensive error handling
+- ✅ Input validation
+- ✅ Security logging
+- ✅ Rate limiting for APIs
+
+### **📊 Performance Standards**
+
+#### **Response Time Targets**
+- **API endpoints**: <500ms average
+- **Voice processing**: <1 second roundtrip
+- **Frontend rendering**: <200ms initial load
+
+#### **Monitoring & Alerts**
+- **Real-time metrics** via `/performance` endpoint
+- **Latency tracking** for STT/LLM/TTS pipeline
+- **Error rate monitoring**
+- **Resource usage tracking**
+
+### **🚨 Emergency Procedures**
+
+#### **Hotfix Process**
+```bash
+# For critical production issues
+git checkout main
+git checkout -b hotfix/critical-api-error
+
+# Fix the issue
+git commit -m "fix(api): resolve critical authentication error"
+
+# Create PR directly to main
+# Get immediate approval and merge
+git checkout main
+git pull origin main
+git tag -a v1.0.1 -m "Hotfix: Critical API error"
+git push origin v1.0.1
+```
+
+#### **Rollback Process**
+```bash
+# If deployment fails
+git checkout main
+git revert <commit-hash>
+git push origin main
+
+# Or rollback to previous tag
+git checkout v1.0.0
+git checkout -b rollback/v1.0.0
+git push origin rollback/v1.0.0
+```
+
+### **📚 Documentation Requirements**
+
+#### **Code Documentation**
+- **Functions**: Docstrings with examples
+- **Classes**: Purpose and usage explanation
+- **APIs**: Endpoint documentation with examples
+- **Configuration**: Environment variable explanations
+
+#### **Update These Files**
+- **`README.md`**: Major project changes
+- **`QUICK_START.md`**: Setup process updates
+- **`CHANGELOG.md`**: All version changes
+- **API docs**: When endpoints change
+
+### **🔄 Team Communication**
+
+#### **Daily Standups**
+- **Progress updates** on current features
+- **Blockers** and help needed
+- **Code review requests**
+- **Deployment status**
+
+#### **Weekly Reviews**
+- **Sprint planning** and prioritization
+- **Code quality metrics** review
+- **Performance analysis**
+- **Security assessment**
+
+#### **Monthly Planning**
+- **Feature roadmap** updates
+- **Technical debt** assessment
+- **Infrastructure** improvements
+- **Team process** optimization
+
+### **🎯 Success Metrics**
+
+#### **Code Quality**
+- **Test coverage**: >80%
+- **Code review time**: <24 hours
+- **Bug rate**: <5% of deployments
+- **Documentation**: 100% coverage
+
+#### **Team Productivity**
+- **PR merge time**: <48 hours
+- **Deployment frequency**: Daily
+- **Feature delivery**: On schedule
+- **Team satisfaction**: High
+
+---
+
+**💡 Pro Tip**: Use the [Team Collaboration Guide](docs/development/TEAM_COLLABORATION_GUIDE.md) for detailed workflows and best practices!
+
 ### **Week 2: Customization**
 - [ ] Modify voice responses
 - [ ] Adjust language settings
@@ -138,7 +366,7 @@ docs/
 
 ## 🎉 **Welcome to the Team!**
 
-You're building the future of customer service in LATAM! 
+You're building the future of customer service in LATAM!
 
 **Next Steps:**
 1. ✅ **Run setup script**: `./setup.sh` or `setup.bat`
