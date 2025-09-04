@@ -23,6 +23,7 @@ import json
 import time
 import logging
 import statistics
+import threading
 from typing import Dict, Any, Optional, List, Tuple
 from datetime import datetime
 from dotenv import load_dotenv
@@ -191,6 +192,167 @@ class LanguageManager:
             'consecutive_detections': self.consecutive_detections
         }
 
+
+class RealCallManager:
+    """Manages real-time call tracking and performance metrics."""
+    
+    def __init__(self):
+        self.active_calls = {}  # Track active calls by call_sid
+        self.call_history = []  # Store completed call data
+        self.lock = threading.Lock()
+        self.total_calls_today = 0
+        self.reset_daily_stats()
+    
+    def reset_daily_stats(self):
+        """Reset daily statistics at midnight."""
+        today = datetime.now().date()
+        if not hasattr(self, '_last_reset_date') or self._last_reset_date != today:
+            self._last_reset_date = today
+            self.total_calls_today = 0
+            logger.info("📊 Daily call statistics reset")
+    
+    def start_call(self, call_sid: str, phone_number: str, direction: str = "inbound"):
+        """Start tracking a new call."""
+        with self.lock:
+            self.reset_daily_stats()
+            
+            call_data = {
+                'call_sid': call_sid,
+                'phone_number': phone_number,
+                'direction': direction,
+                'start_time': datetime.now(),
+                'status': 'active',
+                'language': 'es-LA',  # Default language
+                'stt_latency': [],
+                'llm_latency': [],
+                'tts_latency': [],
+                'total_latency': [],
+                'language_switches': 0,
+                'interruptions': 0,
+                'utterances': 0
+            }
+            
+            self.active_calls[call_sid] = call_data
+            self.total_calls_today += 1
+            
+            logger.info(f"📞 Call started: {call_sid} from {phone_number}")
+            logger.info(f"📊 Active calls: {len(self.active_calls)}")
+    
+    def end_call(self, call_sid: str, reason: str = "completed"):
+        """End tracking a call and move to history."""
+        with self.lock:
+            if call_sid in self.active_calls:
+                call_data = self.active_calls.pop(call_sid)
+                call_data['end_time'] = datetime.now()
+                call_data['duration'] = (call_data['end_time'] - call_data['start_time']).total_seconds()
+                call_data['end_reason'] = reason
+                call_data['status'] = 'completed'
+                
+                self.call_history.append(call_data)
+                
+                logger.info(f"📞 Call ended: {call_sid} - Duration: {call_data['duration']:.1f}s")
+                logger.info(f"📊 Active calls: {len(self.active_calls)}")
+    
+    def update_call_language(self, call_sid: str, language: str):
+        """Update the language for a specific call."""
+        with self.lock:
+            if call_sid in self.active_calls:
+                old_language = self.active_calls[call_sid]['language']
+                if old_language != language:
+                    self.active_calls[call_sid]['language'] = language
+                    self.active_calls[call_sid]['language_switches'] += 1
+                    logger.info(f"🔄 Call {call_sid}: Language changed from {old_language} to {language}")
+    
+    def record_performance_metric(self, call_sid: str, metric_type: str, latency_ms: float):
+        """Record performance metrics for a call."""
+        with self.lock:
+            if call_sid in self.active_calls:
+                if metric_type in ['stt', 'llm', 'tts']:
+                    self.active_calls[call_sid][f'{metric_type}_latency'].append(latency_ms)
+                elif metric_type == 'total':
+                    self.active_calls[call_sid]['total_latency'].append(latency_ms)
+                
+                # Keep only last 100 measurements to prevent memory bloat
+                if len(self.active_calls[call_sid][f'{metric_type}_latency']) > 100:
+                    self.active_calls[call_sid][f'{metric_type}_latency'] = self.active_calls[call_sid][f'{metric_type}_latency'][-100:]
+    
+    def record_interruption(self, call_sid: str):
+        """Record a user interruption during the call."""
+        with self.lock:
+            if call_sid in self.active_calls:
+                self.active_calls[call_sid]['interruptions'] += 1
+                logger.info(f"🔄 Call {call_sid}: User interruption recorded")
+    
+    def record_utterance(self, call_sid: str):
+        """Record a user utterance during the call."""
+        with self.lock:
+            if call_sid in self.active_calls:
+                self.active_calls[call_sid]['utterances'] += 1
+    
+    def get_active_call_count(self) -> int:
+        """Get the number of currently active calls."""
+        with self.lock:
+            return len(self.active_calls)
+    
+    def get_performance_metrics(self) -> Dict[str, Any]:
+        """Get comprehensive performance metrics."""
+        with self.lock:
+            all_stt = []
+            all_llm = []
+            all_tts = []
+            all_total = []
+            
+            # Collect metrics from active calls
+            for call in self.active_calls.values():
+                all_stt.extend(call.get('stt_latency', []))
+                all_llm.extend(call.get('llm_latency', []))
+                all_tts.extend(call.get('tts_latency', []))
+                all_total.extend(call.get('total_latency', []))
+            
+            # Calculate averages
+            def safe_average(values):
+                return sum(values) / len(values) if values else 0
+            
+            avg_stt = safe_average(all_stt)
+            avg_llm = safe_average(all_llm)
+            avg_tts = safe_average(all_tts)
+            avg_total = safe_average(all_total)
+            
+            # Calculate percentiles for total latency
+            if all_total:
+                sorted_latencies = sorted(all_total)
+                p95_latency = sorted_latencies[int(len(sorted_latencies) * 0.95)]
+                min_latency = min(all_total)
+                max_latency = max(all_total)
+            else:
+                p95_latency = min_latency = max_latency = 0
+            
+            return {
+                'active_calls': len(self.active_calls),
+                'total_calls_today': self.total_calls_today,
+                'avg_stt_latency': round(avg_stt, 2),
+                'avg_llm_latency': round(avg_llm, 2),
+                'avg_tts_latency': round(avg_tts, 2),
+                'avg_total_latency': round(avg_total, 2),
+                'p95_latency': round(p95_latency, 2),
+                'min_latency': round(min_latency, 2),
+                'max_latency': round(max_latency, 2),
+                'total_utterances': sum(call.get('utterances', 0) for call in self.active_calls.values()),
+                'total_interruptions': sum(call.get('interruptions', 0) for call in self.active_calls.values()),
+                'total_language_switches': sum(call.get('language_switches', 0) for call in self.active_calls.values())
+            }
+    
+    def get_call_info(self, call_sid: str) -> Optional[Dict[str, Any]]:
+        """Get information about a specific call."""
+        with self.lock:
+            return self.active_calls.get(call_sid)
+    
+    def get_recent_calls(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """Get recent call history."""
+        with self.lock:
+            return sorted(self.call_history, key=lambda x: x['start_time'], reverse=True)[:limit]
+
+
 class PerformanceMonitor:
     """Real-time performance monitoring for production calls."""
     
@@ -325,6 +487,7 @@ class TwilioVoiceAgent:
         self.pipeline = None
         self.performance_monitor = PerformanceMonitor()
         self.language_manager = LanguageManager()
+        self.call_manager = RealCallManager()  # Add real call management
         
         # Performance tracking
         self.latency_target = 0.5  # 500ms target
@@ -697,15 +860,9 @@ def twilio_webhook():
         
         logger.info(f"📞 Incoming call from {from_number} to {to_number} (SID: {call_sid})")
         
-        # Store call information
+        # Store call information using RealCallManager
         if voice_agent:
-            voice_agent.active_calls[call_sid] = {
-                'from': from_number,
-                'to': to_number,
-                'start_time': datetime.now(),
-                'status': 'ringing',
-                'language': voice_agent.language_manager.primary_language
-            }
+            voice_agent.call_manager.start_call(call_sid, from_number, "inbound")
             
             # Start performance monitoring for this call
             voice_agent.performance_monitor.start_call_monitoring(call_sid)
@@ -732,9 +889,10 @@ def consent_response():
         if any(word in speech_result for word in consent_words):
             logger.info(f"✅ User consented for call {call_sid}")
             
-            # Update call status
-            if voice_agent and call_sid in voice_agent.active_calls:
-                voice_agent.active_calls[call_sid]['status'] = 'connected'
+            # Update call status using RealCallManager
+            if voice_agent and voice_agent.call_manager.get_call_info(call_sid):
+                # Call is already being tracked by RealCallManager
+                pass
             
             # Return greeting TwiML
             twiml = voice_agent.generate_greeting_twiml() if voice_agent else ""
@@ -772,7 +930,7 @@ def health_check():
     return {
         'status': 'healthy',
         'timestamp': datetime.now().isoformat(),
-        'active_calls': len(voice_agent.active_calls) if voice_agent else 0,
+        'active_calls': voice_agent.call_manager.get_active_call_count() if voice_agent else 0,
         'services': {
             'tts': voice_agent.tts_service is not None if voice_agent else False,
             'stt': voice_agent.stt_service is not None if voice_agent else False,
@@ -791,10 +949,95 @@ def performance_metrics():
     
     if call_sid:
         # Return metrics for specific call
-        return voice_agent.performance_monitor.get_call_summary(call_sid)
+        call_info = voice_agent.call_manager.get_call_info(call_sid)
+        if call_info:
+            return {
+                'call_sid': call_sid,
+                'status': call_info['status'],
+                'duration': call_info.get('duration', 0),
+                'language': call_info['language'],
+                'language_switches': call_info['language_switches'],
+                'interruptions': call_info['interruptions'],
+                'utterances': call_info['utterances'],
+                'avg_stt_latency': sum(call_info.get('stt_latency', [])) / len(call_info.get('stt_latency', [])) if call_info.get('stt_latency') else 0,
+                'avg_llm_latency': sum(call_info.get('llm_latency', [])) / len(call_info.get('llm_latency', [])) if call_info.get('llm_latency') else 0,
+                'avg_tts_latency': sum(call_info.get('tts_latency', [])) / len(call_info.get('tts_latency', [])) if call_info.get('tts_latency') else 0
+            }
+        else:
+            return {'error': 'Call not found'}, 404
     else:
-        # Return global metrics
-        return voice_agent.performance_monitor.get_global_summary()
+        # Return global metrics from RealCallManager
+        return voice_agent.call_manager.get_performance_metrics()
+
+
+@app.route('/test-call', methods=['POST'])
+def test_call():
+    """Test endpoint to simulate a call for testing purposes."""
+    try:
+        data = request.get_json()
+        if not data:
+            return {'error': 'No data provided'}, 400
+        
+        phone_number = data.get('phone_number', '+1234567890')
+        call_sid = f"test_{int(time.time())}"
+        
+        if voice_agent:
+            # Start a test call
+            voice_agent.call_manager.start_call(call_sid, phone_number, "test")
+            
+            # Simulate some performance metrics
+            voice_agent.call_manager.record_performance_metric(call_sid, 'stt', 150.0)
+            voice_agent.call_manager.record_performance_metric(call_sid, 'llm', 200.0)
+            voice_agent.call_manager.record_performance_metric(call_sid, 'tts', 100.0)
+            voice_agent.call_manager.record_performance_metric(call_sid, 'total', 450.0)
+            
+            # Simulate language switching
+            voice_agent.call_manager.update_call_language(call_sid, 'en-US')
+            
+            logger.info(f"🧪 Test call started: {call_sid} for {phone_number}")
+            
+            return {
+                'status': 'success',
+                'call_sid': call_sid,
+                'phone_number': phone_number,
+                'message': 'Test call started successfully'
+            }
+        else:
+            return {'error': 'Voice agent not initialized'}, 500
+            
+    except Exception as e:
+        logger.error(f"❌ Test call error: {e}")
+        return {'error': str(e)}, 500
+
+
+@app.route('/end-test-call', methods=['POST'])
+def end_test_call():
+    """End a test call."""
+    try:
+        data = request.get_json()
+        if not data:
+            return {'error': 'No data provided'}, 400
+        
+        call_sid = data.get('call_sid')
+        if not call_sid:
+            return {'error': 'No call_sid provided'}, 500
+        
+        if voice_agent:
+            voice_agent.call_manager.end_call(call_sid, "test_completed")
+            logger.info(f"🧪 Test call ended: {call_sid}")
+            
+            return {
+                'status': 'success',
+                'call_sid': call_sid,
+                'message': 'Test call ended successfully'
+            }
+        else:
+            return {'error': 'Voice agent not initialized'}, 500
+            
+    except Exception as e:
+        logger.error(f"❌ End test call error: {e}")
+        return {'error': str(e)}, 500
+
 
 @app.route('/language', methods=['GET'])
 def language_info():

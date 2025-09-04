@@ -223,7 +223,7 @@ class VoiceAIApiService {
 
   // Start Test Call
   async startTestCall(testConfig) {
-    return this.apiCall('/api/test/start', {
+    return this.apiCall('/test-call', {
       method: 'POST',
       body: JSON.stringify(testConfig),
     });
@@ -232,6 +232,14 @@ class VoiceAIApiService {
   // Get Test Results
   async getTestResults(testId) {
     return this.apiCall(`/api/test/results/${testId}`);
+  }
+
+  // End Test Call
+  async endTestCall(callSid) {
+    return this.apiCall('/end-test-call', {
+      method: 'POST',
+      body: JSON.stringify({ call_sid: callSid }),
+    });
   }
 
   // Update Agent Configuration
