@@ -1,0 +1,29 @@
+# Voice AI Agent Requirements
+# Core Framework
+pipecat-ai>=0.0.80
+
+# Telephony
+twilio>=9.0.0
+
+# Speech-to-Text
+deepgram-sdk>=4.0.0
+
+# Text-to-Speech
+elevenlabs>=2.0.0
+
+# Large Language Model
+openai>=1.0.0
+
+# Web Framework (for webhooks)
+flask>=3.0.0
+flask-cors>=4.0.0
+
+# Environment Variables
+python-dotenv>=1.0.0
+
+# HTTP Client
+requests>=2.31.0
+
+# Async Support
+aiohttp>=3.9.0
+websockets>=12.0
