@@ -64,7 +64,7 @@ function Testing() {
     try {
       // Start test call
       const testResponse = await apiService.startTestCall(testConfig);
-      
+
       // Simulate test progress
       const interval = setInterval(() => {
         setProgress(prev => {
@@ -87,12 +87,12 @@ function Testing() {
       setTimeout(async () => {
         clearInterval(interval);
         setProgress(100);
-        
+
         try {
           // Get test results
           const results = await apiService.getTestResults(testResponse.testId || 'test-123');
           setTestResults(results);
-          
+
           setTestLogs(prev => [
             ...prev,
             { time: new Date().toLocaleTimeString(), message: 'Test completed successfully', type: 'success' },
@@ -114,7 +114,7 @@ function Testing() {
             ],
           });
         }
-        
+
         setIsRunning(false);
       }, 10000);
 
@@ -143,13 +143,13 @@ function Testing() {
     try {
       setError(null);
       const response = await apiService.startTestCall({ phone_number: testConfig.phoneNumber });
-      
+
       if (response.status === 'success') {
         setTestConfig(prev => ({
           ...prev,
           activeCallSid: response.call_sid
         }));
-        
+
         setTestLogs(prev => [
           ...prev,
           { time: new Date().toLocaleTimeString(), message: `Real call started: ${response.call_sid}`, type: 'success' },
@@ -169,13 +169,13 @@ function Testing() {
 
     try {
       const response = await apiService.endTestCall(testConfig.activeCallSid);
-      
+
       if (response.status === 'success') {
         setTestConfig(prev => ({
           ...prev,
           activeCallSid: null
         }));
-        
+
         setTestLogs(prev => [
           ...prev,
           { time: new Date().toLocaleTimeString(), message: `Real call ended: ${testConfig.activeCallSid}`, type: 'info' },
@@ -399,7 +399,7 @@ function Testing() {
                   <Typography variant="subtitle1" gutterBottom>
                     Test Results
                   </Typography>
-                  
+
                   <Grid container spacing={2} sx={{ mb: 2 }}>
                     <Grid item xs={6} md={3}>
                       <Box sx={{ textAlign: 'center', p: 2, bgcolor: 'grey.50', borderRadius: 1 }}>
@@ -471,7 +471,7 @@ function Testing() {
               <Typography variant="subtitle1" gutterBottom>
                 Test Logs
               </Typography>
-              
+
               <Box sx={{ maxHeight: 300, overflowY: 'auto', bgcolor: 'grey.50', p: 2, borderRadius: 1 }}>
                 {testLogs.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 2 }}>
@@ -486,16 +486,16 @@ function Testing() {
                           secondary={log.time}
                           primaryTypographyProps={{
                             variant: 'body2',
-                            color: log.type === 'error' ? 'error.main' : 
-                                   log.type === 'warning' ? 'warning.main' : 
+                            color: log.type === 'error' ? 'error.main' :
+                                   log.type === 'warning' ? 'warning.main' :
                                    log.type === 'success' ? 'success.main' : 'text.primary',
                           }}
                         />
                         <Chip
                           label={log.type}
                           size="small"
-                          color={log.type === 'error' ? 'error' : 
-                                 log.type === 'warning' ? 'warning' : 
+                          color={log.type === 'error' ? 'error' :
+                                 log.type === 'warning' ? 'warning' :
                                  log.type === 'success' ? 'success' : 'default'}
                           variant="outlined"
                         />
