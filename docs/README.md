@@ -30,6 +30,7 @@ Welcome to the Voice AI Agent documentation! This guide will help you find the i
 
 - **[Setup Summary](setup/SETUP_SUMMARY.md)**: Technical setup details and troubleshooting
 - **[Environment Configuration](setup/TEAM_ONBOARDING.md#-required-accounts--api-keys)**: API keys and service setup
+- **[Ngrok Integration](setup/NGROK_INTEGRATION.md)**: Real phone testing with ngrok tunnels
 
 ### **Frontend Development**
 

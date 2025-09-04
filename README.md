@@ -48,7 +48,16 @@ cd frontend && npm start
 
 ## 📱 **Test Real Phone Calls**
 
-### **1. Expose Backend**
+### **🚀 Quick Setup (Automated)**
+```bash
+# macOS/Linux
+./start_with_ngrok.sh
+
+# Windows
+start_with_ngrok.bat
+```
+
+### **🔧 Manual Setup**
 ```bash
 # Install ngrok
 brew install ngrok  # macOS
@@ -58,10 +67,12 @@ brew install ngrok  # macOS
 ngrok http 5001
 ```
 
-### **2. Configure Twilio**
+### **📞 Configure Twilio**
 1. Go to [Twilio Console](https://console.twilio.com/)
 2. **Phone Numbers** → **Manage** → **Active numbers**
 3. Set **Webhook URL**: `https://abc123.ngrok.io/webhook`
+
+📖 **Detailed Guide**: [Ngrok Integration](docs/setup/NGROK_INTEGRATION.md)
 4. Set **HTTP Method**: `POST`
 
 ### **3. Make a Call**
