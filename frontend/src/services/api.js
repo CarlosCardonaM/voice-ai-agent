@@ -294,6 +294,37 @@ class VoiceAIApiService {
   async getAnalytics(timeRange = '24h') {
     return this.apiCall(`/api/analytics?range=${timeRange}`);
   }
+
+  // Phone Numbers Management
+  async getPhoneNumbers() {
+    return this.apiCall('/phone-numbers');
+  }
+
+  async createPhoneNumber(phoneNumberData) {
+    return this.apiCall('/phone-numbers', {
+      method: 'POST',
+      body: JSON.stringify(phoneNumberData),
+    });
+  }
+
+  async updatePhoneNumber(numberId, phoneNumberData) {
+    return this.apiCall(`/phone-numbers/${numberId}`, {
+      method: 'PUT',
+      body: JSON.stringify(phoneNumberData),
+    });
+  }
+
+  async deletePhoneNumber(numberId) {
+    return this.apiCall(`/phone-numbers/${numberId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async initiateCall(numberId) {
+    return this.apiCall(`/phone-numbers/${numberId}/call`, {
+      method: 'POST',
+    });
+  }
 }
 
 // Create singleton instance

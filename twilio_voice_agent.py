@@ -1131,6 +1131,136 @@ def end_test_call():
         return {"error": str(e)}, 500
 
 
+@app.route("/phone-numbers", methods=["GET"])
+def get_phone_numbers():
+    """Get all phone numbers from the database."""
+    try:
+        # En producción, esto vendría de una base de datos real
+        # Por ahora, retornamos datos simulados
+        mock_data = [
+            {
+                "id": 1,
+                "name": "Juan Pérez",
+                "phoneNumber": "+1 (555) 123-4567",
+                "type": "personal",
+                "location": "México",
+                "notes": "Cliente potencial - interesado en servicios",
+                "tags": ["cliente", "potencial"],
+                "createdAt": "2024-01-15",
+                "lastCalled": "2024-01-20",
+            },
+            {
+                "id": 2,
+                "name": "María García",
+                "phoneNumber": "+1 (555) 987-6543",
+                "type": "business",
+                "location": "España",
+                "notes": "Empresa de tecnología",
+                "tags": ["empresa", "tecnología"],
+                "createdAt": "2024-01-10",
+                "lastCalled": None,
+            },
+            {
+                "id": 3,
+                "name": "Carlos López",
+                "phoneNumber": "+1 (555) 456-7890",
+                "type": "personal",
+                "location": "Colombia",
+                "notes": "Amigo de la universidad",
+                "tags": ["personal", "amigo"],
+                "createdAt": "2024-01-05",
+                "lastCalled": "2024-01-18",
+            },
+        ]
+        
+        logger.info(f"📞 Retrieved {len(mock_data)} phone numbers")
+        return {"phoneNumbers": mock_data}, 200
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting phone numbers: {e}")
+        return {"error": str(e)}, 500
+
+
+@app.route("/phone-numbers", methods=["POST"])
+def create_phone_number():
+    """Create a new phone number entry."""
+    try:
+        data = request.get_json()
+        
+        # Validar datos requeridos
+        required_fields = ["name", "phoneNumber", "type"]
+        for field in required_fields:
+            if field not in data:
+                return {"error": f"Missing required field: {field}"}, 400
+        
+        # En producción, esto se guardaría en la base de datos
+        new_number = {
+            "id": int(time.time()),  # ID temporal basado en timestamp
+            "name": data["name"],
+            "phoneNumber": data["phoneNumber"],
+            "type": data["type"],
+            "location": data.get("location", ""),
+            "notes": data.get("notes", ""),
+            "tags": data.get("tags", []),
+            "createdAt": datetime.now().strftime("%Y-%m-%d"),
+            "lastCalled": None,
+        }
+        
+        logger.info(f"📞 Created new phone number: {new_number['name']} - {new_number['phoneNumber']}")
+        return {"phoneNumber": new_number}, 201
+        
+    except Exception as e:
+        logger.error(f"❌ Error creating phone number: {e}")
+        return {"error": str(e)}, 500
+
+
+@app.route("/phone-numbers/<int:number_id>", methods=["PUT"])
+def update_phone_number(number_id):
+    """Update an existing phone number entry."""
+    try:
+        data = request.get_json()
+        
+        # En producción, esto actualizaría la base de datos
+        logger.info(f"📞 Updated phone number ID {number_id}")
+        return {"message": "Phone number updated successfully"}, 200
+        
+    except Exception as e:
+        logger.error(f"❌ Error updating phone number: {e}")
+        return {"error": str(e)}, 500
+
+
+@app.route("/phone-numbers/<int:number_id>", methods=["DELETE"])
+def delete_phone_number(number_id):
+    """Delete a phone number entry."""
+    try:
+        # En producción, esto eliminaría de la base de datos
+        logger.info(f"📞 Deleted phone number ID {number_id}")
+        return {"message": "Phone number deleted successfully"}, 200
+        
+    except Exception as e:
+        logger.error(f"❌ Error deleting phone number: {e}")
+        return {"error": str(e)}, 500
+
+
+@app.route("/phone-numbers/<int:number_id>/call", methods=["POST"])
+def initiate_call(number_id):
+    """Initiate a call to a specific phone number."""
+    try:
+        # En producción, esto iniciaría una llamada real usando Twilio
+        logger.info(f"📞 Initiating call to phone number ID {number_id}")
+        
+        # Simular inicio de llamada
+        return {
+            "message": "Call initiated successfully",
+            "callId": f"call_{number_id}_{int(time.time())}",
+            "status": "initiated"
+        }, 200
+        
+    except Exception as e:
+        logger.error(f"❌ Error initiating call: {e}")
+        return {"error": str(e)}, 500
+
+
 @app.route("/language", methods=["GET"])
 def language_info():
     """Language information endpoint."""

@@ -37,8 +37,10 @@ import {
   Refresh as RefreshIcon,
   Security as SecurityIcon,
 } from '@mui/icons-material';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function Deploy() {
+  const { t } = useLanguage();
   const [deploymentConfig, setDeploymentConfig] = useState({
     environment: 'production',
     region: 'us-east-1',
@@ -152,11 +154,11 @@ function Deploy() {
               </Typography>
 
               <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Environment</InputLabel>
+                <InputLabel>{t('deploy.environment')}</InputLabel>
                 <Select
                   value={deploymentConfig.environment}
                   onChange={(e) => setDeploymentConfig(prev => ({ ...prev, environment: e.target.value }))}
-                  label="Environment"
+label={t('deploy.environment')}
                 >
                   {environments.map((env) => (
                     <MenuItem key={env.id} value={env.id}>
@@ -168,11 +170,11 @@ function Deploy() {
               </FormControl>
 
               <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Region</InputLabel>
+                <InputLabel>{t('deploy.region')}</InputLabel>
                 <Select
                   value={deploymentConfig.region}
                   onChange={(e) => setDeploymentConfig(prev => ({ ...prev, region: e.target.value }))}
-                  label="Region"
+label={t('deploy.region')}
                 >
                   {regions.map((region) => (
                     <MenuItem key={region.id} value={region.id}>
@@ -188,11 +190,11 @@ function Deploy() {
               </FormControl>
 
               <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>Instance Type</InputLabel>
+                <InputLabel>{t('deploy.instanceType')}</InputLabel>
                 <Select
                   value={deploymentConfig.instanceType}
                   onChange={(e) => setDeploymentConfig(prev => ({ ...prev, instanceType: e.target.value }))}
-                  label="Instance Type"
+label={t('deploy.instanceType')}
                 >
                   {instanceTypes.map((instance) => (
                     <MenuItem key={instance.id} value={instance.id}>
@@ -209,7 +211,7 @@ function Deploy() {
 
               <TextField
                 fullWidth
-                label="Health Check Path"
+label={t('deploy.healthCheck')}
                 value={deploymentConfig.healthCheckPath}
                 onChange={(e) => setDeploymentConfig(prev => ({ ...prev, healthCheckPath: e.target.value }))}
                 sx={{ mb: 3 }}
@@ -256,7 +258,7 @@ function Deploy() {
                   <ListItemIcon>
                     <CheckIcon color="success" />
                   </ListItemIcon>
-                  <ListItemText primary="Auto Scaling" secondary="Enabled" />
+                  <ListItemText primary={t('deploy.autoScaling')} secondary="Enabled" />
                 </ListItem>
                 <ListItem>
                   <ListItemIcon>
@@ -342,13 +344,13 @@ function Deploy() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Deployment Logs
+{t('deploy.deploymentLogs')}
               </Typography>
               
               <Box sx={{ maxHeight: 300, overflow: 'auto', bgcolor: 'grey.50', p: 2, borderRadius: 2 }}>
                 {deploymentLogs.length === 0 ? (
                   <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-                    No deployment logs yet. Start a deployment to see activity.
+{t('deploy.noDeploymentLogs')}
                   </Typography>
                 ) : (
                   <List dense>
