@@ -27,24 +27,29 @@ import {
   Notifications as NotificationsIcon,
   AccountCircle as AccountIcon,
   Mic as MicIcon,
+  Phone as PhoneIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
+import LanguageSelector from '../LanguageSelector/LanguageSelector';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const drawerWidth = 280;
 
-const menuItems = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/' },
-  { text: 'Builder', icon: <BuildIcon />, path: '/builder' },
-  { text: 'Testing', icon: <TestingIcon />, path: '/testing' },
-  { text: 'Deploy', icon: <DeployIcon />, path: '/deploy' },
-  { text: 'Monitor', icon: <MonitorIcon />, path: '/monitor' },
-  { text: 'Settings', icon: <SettingsIcon />, path: '/settings' },
+const getMenuItems = (t) => [
+  { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
+  { text: t('navigation.builder'), icon: <BuildIcon />, path: '/builder' },
+  { text: t('navigation.phoneNumbers'), icon: <PhoneIcon />, path: '/phone-numbers' },
+  { text: t('navigation.testing'), icon: <TestingIcon />, path: '/testing' },
+  { text: t('navigation.deploy'), icon: <DeployIcon />, path: '/deploy' },
+  { text: t('navigation.monitor'), icon: <MonitorIcon />, path: '/monitor' },
+  { text: t('navigation.settings'), icon: <SettingsIcon />, path: '/settings' },
 ];
 
 function Layout({ children }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useLanguage();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -64,10 +69,10 @@ function Layout({ children }) {
         </Avatar>
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-            Voice AI Agent
+            {t('layout.appTitle')}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Professional Voice AI Platform
+            {t('layout.appSubtitle')}
           </Typography>
         </Box>
       </Box>
@@ -76,7 +81,7 @@ function Layout({ children }) {
 
       {/* Navigation Menu */}
       <List sx={{ px: 2, py: 1 }}>
-        {menuItems.map((item) => (
+        {getMenuItems(t).map((item) => (
           <ListItem key={item.text} disablePadding sx={{ mb: 1 }}>
             <ListItemButton
               onClick={() => handleNavigation(item.path)}
@@ -153,16 +158,22 @@ function Layout({ children }) {
           </IconButton>
 
           <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            {menuItems.find(item => item.path === location.pathname)?.text || 'Voice AI Agent'}
+            {getMenuItems(t).find(item => item.path === location.pathname)?.text || 'Voice AI Agent'}
           </Typography>
 
           {/* Right side actions */}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {/* Selector de idioma */}
+            <LanguageSelector />
+            
+            {/* Notificaciones */}
             <IconButton color="inherit">
               <Badge badgeContent={3} color="error">
                 <NotificationsIcon />
               </Badge>
             </IconButton>
+            
+            {/* Usuario */}
             <IconButton color="inherit">
               <AccountIcon />
             </IconButton>

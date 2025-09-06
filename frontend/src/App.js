@@ -3,11 +3,15 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { Box } from '@mui/material';
+import { LanguageProvider } from './contexts/LanguageContext';
 
 // Components
 import Layout from './components/Layout/Layout';
+import Landing from './pages/Landing/Landing';
+import Setup from './pages/Setup/Setup';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Builder from './pages/Builder/Builder';
+import PhoneNumbers from './pages/PhoneNumbers/PhoneNumbers';
 import Testing from './pages/Testing/Testing';
 import Deploy from './pages/Deploy/Deploy';
 import Monitor from './pages/Monitor/Monitor';
@@ -66,23 +70,66 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Router>
-        <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/builder" element={<Builder />} />
-              <Route path="/testing" element={<Testing />} />
-              <Route path="/deploy" element={<Deploy />} />
-              <Route path="/monitor" element={<Monitor />} />
-              <Route path="/settings" element={<Settings />} />
-            </Routes>
-          </Layout>
-        </Box>
+    <LanguageProvider>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Router>
+                    <Routes>
+                      <Route path="/" element={<Landing />} />
+                      <Route path="/setup" element={<Setup />} />
+                      <Route path="/dashboard" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Dashboard />
+              </Layout>
+            </Box>
+          } />
+          <Route path="/builder" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Builder />
+              </Layout>
+            </Box>
+          } />
+          <Route path="/phone-numbers" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <PhoneNumbers />
+              </Layout>
+            </Box>
+          } />
+          <Route path="/testing" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Testing />
+              </Layout>
+            </Box>
+          } />
+          <Route path="/deploy" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Deploy />
+              </Layout>
+            </Box>
+          } />
+          <Route path="/monitor" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Monitor />
+              </Layout>
+            </Box>
+          } />
+          <Route path="/settings" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Settings />
+              </Layout>
+            </Box>
+          } />
+        </Routes>
       </Router>
     </ThemeProvider>
+    </LanguageProvider>
   );
 }
 

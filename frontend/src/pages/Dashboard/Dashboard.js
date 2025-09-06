@@ -28,6 +28,7 @@ import {
   Refresh as RefreshIcon,
 } from '@mui/icons-material';
 import apiService from '../../services/api';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const StatCard = ({ title, value, subtitle, icon, color, progress, loading = false }) => (
   <Card sx={{ height: '100%' }}>
@@ -92,6 +93,7 @@ function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { t } = useLanguage();
 
   // Fetch dashboard data from backend
   useEffect(() => {
@@ -184,29 +186,29 @@ function Dashboard() {
     ],
     quickActions: [
       {
-        title: 'Start New Call',
-        description: 'Initiate a test call session',
+        title: 'Iniciar Nueva Llamada',
+        description: 'Iniciar una sesión de llamada de prueba',
         icon: <PlayIcon />,
         color: 'success',
         action: () => console.log('Start new call'),
       },
       {
-        title: 'Configure Agent',
-        description: 'Customize voice and behavior',
+        title: 'Configurar Agente',
+        description: 'Personalizar voz y comportamiento',
         icon: <BuildIcon />,
         color: 'primary',
         action: () => console.log('Configure agent'),
       },
       {
-        title: 'View Analytics',
-        description: 'Detailed performance metrics',
+        title: 'Ver Analíticas',
+        description: 'Métricas detalladas de rendimiento',
         icon: <TrendingUpIcon />,
         color: 'info',
         action: () => console.log('View analytics'),
       },
       {
-        title: 'System Settings',
-        description: 'Manage integrations and API keys',
+        title: 'Configuración del Sistema',
+        description: 'Gestionar integraciones y claves API',
         icon: <SettingsIcon />,
         color: 'warning',
         action: () => console.log('System settings'),
@@ -214,36 +216,127 @@ function Dashboard() {
     ],
     recentActivity: [
       {
-        type: 'Call Started',
-        description: 'Incoming call from +1 (555) 123-4567',
-        time: '2 minutes ago',
+        type: 'Llamada Iniciada',
+        description: 'Llamada entrante de +1 (555) 123-4567',
+        time: 'hace 2 minutos',
         status: 'active',
       },
       {
-        type: 'Language Switch',
-        description: 'Switched from Spanish to English',
-        time: '5 minutes ago',
+        type: 'Cambio de Idioma',
+        description: 'Cambió de español a inglés',
+        time: 'hace 5 minutos',
         status: 'completed',
       },
       {
-        type: 'Call Ended',
-        description: 'Call with +1 (555) 987-6543 completed',
-        time: '8 minutes ago',
+        type: 'Llamada Terminada',
+        description: 'Llamada con +1 (555) 987-6543 completada',
+        time: 'hace 8 minutos',
         status: 'completed',
       },
       {
-        type: 'Performance Alert',
-        description: 'Response time exceeded 500ms threshold',
-        time: '12 minutes ago',
+        type: 'Alerta de Rendimiento',
+        description: 'Tiempo de respuesta excedió el umbral de 500ms',
+        time: 'hace 12 minutos',
         status: 'warning',
       },
     ],
   };
 
-  // Use real data if available, otherwise fallback
-  const stats = dashboardData?.performance?.stats || fallbackData.stats;
-  const quickActions = fallbackData.quickActions;
-  const recentActivity = fallbackData.recentActivity;
+  // Use real data if available, otherwise fallback with dynamic translations
+  const stats = dashboardData?.performance?.stats || [
+    {
+      title: t('dashboard.activeCalls'),
+      value: '12',
+      subtitle: t('dashboard.activeCallsDesc'),
+      icon: <CallIcon />,
+      color: 'primary',
+      progress: 75,
+    },
+    {
+      title: t('dashboard.avgResponseTime'),
+      value: '280ms',
+      subtitle: t('dashboard.avgResponseTimeDesc'),
+      icon: <SpeedIcon />,
+      color: 'success',
+      progress: 94,
+    },
+    {
+      title: t('dashboard.languageSwitches'),
+      value: '8',
+      subtitle: t('dashboard.languageSwitchesDesc'),
+      icon: <LanguageIcon />,
+      color: 'info',
+      progress: 60,
+    },
+    {
+      title: t('dashboard.successRate'),
+      value: '99.2%',
+      subtitle: t('dashboard.successRateDesc'),
+      icon: <TrendingUpIcon />,
+      color: 'success',
+      progress: 99,
+    },
+  ];
+  
+  // Crear acciones rápidas con traducciones dinámicas
+  const quickActions = [
+    {
+      title: t('dashboard.startNewCall'),
+      description: t('dashboard.startNewCallDesc'),
+      icon: <PlayIcon />,
+      color: 'success',
+      action: () => console.log('Start new call'),
+    },
+    {
+      title: t('dashboard.configureAgent'),
+      description: t('dashboard.configureAgentDesc'),
+      icon: <BuildIcon />,
+      color: 'primary',
+      action: () => console.log('Configure agent'),
+    },
+    {
+      title: t('dashboard.viewAnalytics'),
+      description: t('dashboard.viewAnalyticsDesc'),
+      icon: <TrendingUpIcon />,
+      color: 'info',
+      action: () => console.log('View analytics'),
+    },
+    {
+      title: t('dashboard.systemSettings'),
+      description: t('dashboard.systemSettingsDesc'),
+      icon: <SettingsIcon />,
+      color: 'warning',
+      action: () => console.log('System settings'),
+    },
+  ];
+  
+  // Crear actividad reciente con traducciones dinámicas
+  const recentActivity = [
+    {
+      type: t('dashboard.callStarted'),
+      description: t('dashboard.callStartedDesc'),
+      time: t('dashboard.minutesAgo', { count: 2 }),
+      status: 'active',
+    },
+    {
+      type: t('dashboard.languageSwitch'),
+      description: t('dashboard.languageSwitchDesc'),
+      time: t('dashboard.minutesAgo', { count: 5 }),
+      status: 'completed',
+    },
+    {
+      type: t('dashboard.callEnded'),
+      description: t('dashboard.callEndedDesc'),
+      time: t('dashboard.minutesAgo', { count: 8 }),
+      status: 'completed',
+    },
+    {
+      type: t('dashboard.performanceAlert'),
+      description: t('dashboard.performanceAlertDesc'),
+      time: t('dashboard.minutesAgo', { count: 12 }),
+      status: 'warning',
+    },
+  ];
 
   if (error) {
     return (
@@ -263,10 +356,10 @@ function Dashboard() {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Dashboard
+          {t('dashboard.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Monitor your Voice AI Agent performance and manage operations
+          {t('dashboard.subtitle')}
         </Typography>
         
         {/* Backend Status */}
@@ -274,25 +367,25 @@ function Dashboard() {
           {dashboardData ? (
             <>
               <Chip 
-                label="Backend Connected" 
+                label={t('dashboard.backendConnected')} 
                 color="success" 
                 size="small" 
                 icon={<MicIcon />}
               />
               <Typography variant="caption" color="text.secondary">
-                Real-time data from Python backend
+                {t('dashboard.realTimeData')}
               </Typography>
             </>
           ) : (
             <>
               <Chip 
-                label="Backend Disconnected" 
+                label={t('dashboard.backendDisconnected')} 
                 color="error" 
                 size="small" 
                 icon={<MicIcon />}
               />
               <Typography variant="caption" color="text.secondary">
-                Using fallback data
+                {t('dashboard.fallbackData')}
               </Typography>
             </>
           )}
@@ -304,7 +397,7 @@ function Dashboard() {
             onClick={() => window.location.reload()}
             sx={{ ml: 'auto' }}
           >
-            Refresh
+{t('dashboard.refresh')}
           </Button>
         </Box>
       </Box>
@@ -320,7 +413,7 @@ function Dashboard() {
 
       {/* Quick Actions */}
       <Typography variant="h5" component="h2" gutterBottom sx={{ mb: 3 }}>
-        Quick Actions
+{t('dashboard.quickActions')}
       </Typography>
       <Grid container spacing={3} sx={{ mb: 4 }}>
         {quickActions.map((action, index) => (
@@ -337,7 +430,7 @@ function Dashboard() {
           <Card>
             <CardContent>
               <Typography variant="h6" component="h3" gutterBottom>
-                Recent Activity
+{t('dashboard.recentActivity')}
               </Typography>
               <Box>
                 {recentActivity.map((activity, index) => (
@@ -386,7 +479,7 @@ function Dashboard() {
           <Card>
             <CardContent>
               <Typography variant="h6" component="h3" gutterBottom>
-                System Status
+{t('dashboard.systemStatus')}
               </Typography>
               
               {loading ? (

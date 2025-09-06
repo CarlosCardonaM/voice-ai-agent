@@ -29,8 +29,10 @@ import {
   Save as SaveIcon,
   PlayArrow as PlayIcon,
 } from '@mui/icons-material';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function Builder() {
+  const { t } = useLanguage();
   const [config, setConfig] = useState({
     // Basic Settings
     agentName: 'LATAM Customer Service Agent',
@@ -116,10 +118,10 @@ function Builder() {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" component="h1" gutterBottom>
-          Agent Builder
+{t('builder.title')}
         </Typography>
         <Typography variant="body1" color="text.secondary">
-          Configure your Voice AI Agent's behavior, voice, and capabilities
+{t('builder.subtitle')}
         </Typography>
       </Box>
 
@@ -131,7 +133,7 @@ function Builder() {
           onClick={handleSave}
           size="large"
         >
-          Save Configuration
+{t('builder.saveConfiguration')}
         </Button>
         <Button
           variant="outlined"
@@ -139,7 +141,7 @@ function Builder() {
           onClick={handleTest}
           size="large"
         >
-          Test Configuration
+{t('builder.testConfiguration')}
         </Button>
       </Box>
 
@@ -152,12 +154,12 @@ function Builder() {
                 <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main', mr: 2 }}>
                   <SettingsIcon />
                 </Avatar>
-                <Typography variant="h6">Basic Settings</Typography>
+                <Typography variant="h6">{t('builder.basicSettings')}</Typography>
               </Box>
               
               <TextField
                 fullWidth
-                label="Agent Name"
+label={t('builder.agentName')}
                 value={config.agentName}
                 onChange={(e) => handleConfigChange('agentName', e.target.value)}
                 sx={{ mb: 3 }}
@@ -165,7 +167,7 @@ function Builder() {
               
               <TextField
                 fullWidth
-                label="Description"
+label={t('builder.description')}
                 value={config.description}
                 onChange={(e) => handleConfigChange('description', e.target.value)}
                 multiline
@@ -174,11 +176,11 @@ function Builder() {
               />
               
               <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Primary Language</InputLabel>
+                <InputLabel>{t('builder.primaryLanguage')}</InputLabel>
                 <Select
                   value={config.primaryLanguage}
                   onChange={(e) => handleConfigChange('primaryLanguage', e.target.value)}
-                  label="Primary Language"
+label={t('builder.primaryLanguage')}
                 >
                   <MenuItem value="es-LA">Spanish (LATAM)</MenuItem>
                   <MenuItem value="en-US">English (US)</MenuItem>
@@ -187,11 +189,11 @@ function Builder() {
               </FormControl>
               
               <FormControl fullWidth>
-                <InputLabel>Secondary Language</InputLabel>
+                <InputLabel>{t('builder.secondaryLanguage')}</InputLabel>
                 <Select
                   value={config.secondaryLanguage}
                   onChange={(e) => handleConfigChange('secondaryLanguage', e.target.value)}
-                  label="Secondary Language"
+label={t('builder.secondaryLanguage')}
                 >
                   <MenuItem value="en-US">English (US)</MenuItem>
                   <MenuItem value="es-LA">Spanish (LATAM)</MenuItem>
@@ -210,7 +212,7 @@ function Builder() {
                 <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', mr: 2 }}>
                   <LanguageIcon />
                 </Avatar>
-                <Typography variant="h6">Language Settings</Typography>
+                <Typography variant="h6">{t('builder.languageSettings')}</Typography>
               </Box>
               
               <FormControlLabel
@@ -220,12 +222,12 @@ function Builder() {
                     onChange={(e) => handleConfigChange('autoLanguageDetection', e.target.checked)}
                   />
                 }
-                label="Auto Language Detection"
+label={t('builder.autoLanguageDetection')}
                 sx={{ mb: 2 }}
               />
               
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Language Switch Threshold: {config.languageSwitchThreshold}
+{t('builder.languageSwitchThreshold')}: {config.languageSwitchThreshold}
               </Typography>
               <Slider
                 value={config.languageSwitchThreshold}
@@ -259,15 +261,15 @@ function Builder() {
                 <Avatar sx={{ bgcolor: 'success.light', color: 'success.main', mr: 2 }}>
                   <VolumeUpIcon />
                 </Avatar>
-                <Typography variant="h6">Voice Settings</Typography>
+                <Typography variant="h6">{t('builder.voiceSettings')}</Typography>
               </Box>
               
               <FormControl fullWidth sx={{ mb: 3 }}>
-                <InputLabel>TTS Voice</InputLabel>
+                <InputLabel>{t('builder.ttsVoice')}</InputLabel>
                 <Select
                   value={config.ttsVoice}
                   onChange={(e) => handleConfigChange('ttsVoice', e.target.value)}
-                  label="TTS Voice"
+label={t('builder.ttsVoice')}
                 >
                   {voiceOptions.map((voice) => (
                     <MenuItem key={voice.id} value={voice.id}>

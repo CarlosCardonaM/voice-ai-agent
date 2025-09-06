@@ -28,8 +28,10 @@ import {
   Api,
 } from '@mui/icons-material';
 import apiService from '../../services/api';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const Settings = () => {
+  const { t } = useLanguage();
   const [showApiKeys, setShowApiKeys] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [testResults, setTestResults] = useState(null);
@@ -143,28 +145,28 @@ const Settings = () => {
 
               <TextField
                 fullWidth
-                label="Twilio Account SID"
+label={t('settings.twilioAccountSid')}
                 value={showApiKeys ? settings.twilioSid : maskApiKey(settings.twilioSid)}
                 onChange={(e) => handleSettingChange('twilioSid', e.target.value)}
                 margin="normal"
                 variant="outlined"
-                helperText="Your Twilio Account SID from the Twilio Console"
+helperText={t('settings.twilioAccountSidHelper')}
               />
 
               <TextField
                 fullWidth
-                label="Twilio Auth Token"
+label={t('settings.twilioAuthToken')}
                 value={showApiKeys ? settings.twilioAuthToken : maskApiKey(settings.twilioAuthToken)}
                 onChange={(e) => handleSettingChange('twilioAuthToken', e.target.value)}
                 margin="normal"
                 variant="outlined"
                 type="password"
-                helperText="Your Twilio Auth Token from the Twilio Console"
+helperText={t('settings.twilioAuthTokenHelper')}
               />
 
               <TextField
                 fullWidth
-                label="ElevenLabs API Key"
+label={t('settings.elevenLabsApiKey')}
                 value={showApiKeys ? settings.elevenLabsKey : maskApiKey(settings.elevenLabsKey)}
                 onChange={(e) => handleSettingChange('elevenLabsKey', e.target.value)}
                 margin="normal"
@@ -175,7 +177,7 @@ const Settings = () => {
 
               <TextField
                 fullWidth
-                label="Deepgram API Key"
+label={t('settings.deepgramApiKey')}
                 value={showApiKeys ? settings.deepgramKey : maskApiKey(settings.deepgramKey)}
                 onChange={(e) => handleSettingChange('deepgramKey', e.target.value)}
                 margin="normal"
@@ -186,7 +188,7 @@ const Settings = () => {
 
               <TextField
                 fullWidth
-                label="OpenAI API Key"
+label={t('settings.openaiApiKey')}
                 value={showApiKeys ? settings.openaiKey : maskApiKey(settings.openaiKey)}
                 onChange={(e) => handleSettingChange('openaiKey', e.target.value)}
                 margin="normal"
@@ -201,7 +203,7 @@ const Settings = () => {
                   onClick={toggleApiKeyVisibility}
                   startIcon={showApiKeys ? <VisibilityOff /> : <Visibility />}
                 >
-                  {showApiKeys ? 'Hide' : 'Show'} API Keys
+{showApiKeys ? t('settings.hideApiKeys') : t('settings.showApiKeys')} API Keys
                 </Button>
                 
                 <Button
@@ -210,7 +212,7 @@ const Settings = () => {
                   disabled={isTesting}
                   startIcon={isTesting ? <CircularProgress size={20} /> : <Refresh />}
                 >
-                  {isTesting ? 'Testing...' : 'Test Connections'}
+{isTesting ? t('settings.testing') : t('settings.testConnections')}
                 </Button>
               </Box>
             </CardContent>
@@ -265,20 +267,20 @@ const Settings = () => {
                     onChange={(e) => handleSettingChange('autoBackup', e.target.checked)}
                   />
                 }
-                label="Enable Auto Backup"
+label={t('settings.enableAutoBackup')}
               />
 
               <FormControl fullWidth margin="normal">
-                <InputLabel>Backup Frequency</InputLabel>
+                <InputLabel>{t('settings.backupFrequency')}</InputLabel>
                 <Select
                   value={settings.backupFrequency}
-                  label="Backup Frequency"
+label={t('settings.backupFrequency')}
                   onChange={(e) => handleSettingChange('backupFrequency', e.target.value)}
                 >
                   <MenuItem value="hourly">Hourly</MenuItem>
-                  <MenuItem value="daily">Daily</MenuItem>
-                  <MenuItem value="weekly">Weekly</MenuItem>
-                  <MenuItem value="monthly">Monthly</MenuItem>
+                  <MenuItem value="daily">{t('settings.daily')}</MenuItem>
+                  <MenuItem value="weekly">{t('settings.weekly')}</MenuItem>
+                  <MenuItem value="monthly">{t('settings.monthly')}</MenuItem>
                 </Select>
               </FormControl>
             </CardContent>
@@ -382,7 +384,7 @@ const Settings = () => {
           onClick={handleSave}
           startIcon={<Save />}
         >
-          Save Settings
+{t('settings.saveSettings')}
         </Button>
       </Box>
     </Box>

@@ -30,8 +30,10 @@ import {
   Error as ErrorIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 function Monitor() {
+  const { t } = useLanguage();
   const activeCalls = [
     { id: 'call_001', from: '+1 (555) 123-4567', duration: '2:34', language: 'es-LA', status: 'active' },
     { id: 'call_002', from: '+1 (555) 987-6543', duration: '1:45', language: 'en-US', status: 'active' },
@@ -84,7 +86,7 @@ function Monitor() {
                     <Typography variant="h4" color="success.main">
                       {performanceMetrics.successRate}%
                     </Typography>
-                    <Typography variant="caption">Success Rate</Typography>
+                    <Typography variant="caption">{t('monitor.successRate')}</Typography>
                     <LinearProgress 
                       variant="determinate" 
                       value={99.2} 
@@ -97,7 +99,7 @@ function Monitor() {
                     <Typography variant="h4" color="info.main">
                       {performanceMetrics.activeCalls}
                     </Typography>
-                    <Typography variant="caption">Active Calls</Typography>
+                    <Typography variant="caption">{t('monitor.activeCalls')}</Typography>
                   </Box>
                 </Grid>
                 <Grid item xs={6} md={3}>
@@ -118,7 +120,7 @@ function Monitor() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                System Status
+{t('monitor.systemStatus')}
               </Typography>
               
               <List dense>
@@ -162,18 +164,18 @@ function Monitor() {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Active Calls
+{t('monitor.activeCalls')}
               </Typography>
               
               <TableContainer component={Paper} variant="outlined">
                 <Table>
                   <TableHead>
                     <TableRow>
-                      <TableCell>Call ID</TableCell>
+                      <TableCell>{t('monitor.callId')}</TableCell>
                       <TableCell>From</TableCell>
-                      <TableCell>Duration</TableCell>
-                      <TableCell>Language</TableCell>
-                      <TableCell>Status</TableCell>
+                      <TableCell>{t('monitor.duration')}</TableCell>
+                      <TableCell>{t('monitor.language')}</TableCell>
+                      <TableCell>{t('monitor.status')}</TableCell>
                       <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
