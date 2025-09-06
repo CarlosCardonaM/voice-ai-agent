@@ -9,6 +9,7 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import Layout from './components/Layout/Layout';
 import Landing from './pages/Landing/Landing';
 import Setup from './pages/Setup/Setup';
+import Inicio from './pages/Inicio/Inicio';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Builder from './pages/Builder/Builder';
 import PhoneNumbers from './pages/PhoneNumbers/PhoneNumbers';
@@ -20,7 +21,7 @@ import Settings from './pages/Settings/Settings';
 // Create theme
 const theme = createTheme({
   palette: {
-    mode: 'light',
+    mode: 'dark',
     primary: {
       main: '#1976d2',
       light: '#42a5f5',
@@ -32,20 +33,55 @@ const theme = createTheme({
       dark: '#9a0036',
     },
     background: {
-      default: '#f5f5f5',
-      paper: '#ffffff',
+      default: '#1a1a1a',
+      paper: '#2a2a2a',
     },
   },
   typography: {
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Montserrat", "Roboto", "Helvetica", "Arial", sans-serif',
+    h1: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 700,
+    },
+    h2: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 600,
+    },
+    h3: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 600,
+    },
     h4: {
+      fontFamily: '"Montserrat", sans-serif',
       fontWeight: 600,
     },
     h5: {
+      fontFamily: '"Montserrat", sans-serif',
       fontWeight: 600,
     },
     h6: {
+      fontFamily: '"Montserrat", sans-serif',
       fontWeight: 600,
+    },
+    body1: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 400,
+    },
+    body2: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 400,
+    },
+    button: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 500,
+    },
+    caption: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 400,
+    },
+    overline: {
+      fontFamily: '"Montserrat", sans-serif',
+      fontWeight: 500,
     },
   },
   components: {
@@ -61,7 +97,7 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          boxShadow: '0 2px 8px rgba(255,255,255,0.1)',
         },
       },
     },
@@ -77,6 +113,13 @@ function App() {
                     <Routes>
                       <Route path="/" element={<Landing />} />
                       <Route path="/setup" element={<Setup />} />
+                      <Route path="/inicio" element={
+            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+              <Layout>
+                <Inicio />
+              </Layout>
+            </Box>
+          } />
                       <Route path="/dashboard" element={
             <Box sx={{ display: 'flex', minHeight: '100vh' }}>
               <Layout>

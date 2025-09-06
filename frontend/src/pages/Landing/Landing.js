@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Logo from '../../components/Logo/Logo';
 
 function Landing() {
   const navigate = useNavigate();
@@ -7,7 +8,7 @@ function Landing() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#000000',
+      background: '#1a1a1a',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -16,9 +17,9 @@ function Landing() {
       fontFamily: 'Arial, sans-serif'
     }}>
       <div>
-        <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>
-          Voice AI Agent
-        </h1>
+        <div style={{ marginBottom: '2rem' }}>
+          <Logo size="xlarge" variant="light" />
+        </div>
         <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
           Plataforma profesional de IA de voz
         </p>

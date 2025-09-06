@@ -6,7 +6,6 @@ import {
   CardContent,
   Typography,
   Chip,
-  Avatar,
   LinearProgress,
   List,
   ListItem,
@@ -15,79 +14,17 @@ import {
   CircularProgress,
   Alert,
   Button,
+  Avatar,
+  Fade,
 } from '@mui/material';
 import {
   Mic as MicIcon,
-  PlayArrow as PlayIcon,
-  Settings as SettingsIcon,
-  TrendingUp as TrendingUpIcon,
-  Speed as SpeedIcon,
-  Language as LanguageIcon,
-  Call as CallIcon,
-  Build as BuildIcon,
   Refresh as RefreshIcon,
+  BarChart as BarChartIcon,
+  CheckCircle as CheckCircleIcon,
 } from '@mui/icons-material';
 import apiService from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
-
-const StatCard = ({ title, value, subtitle, icon, color, progress, loading = false }) => (
-  <Card sx={{ height: '100%' }}>
-    <CardContent>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-        <Avatar sx={{ bgcolor: `${color}.light`, color: `${color}.main` }}>
-          {icon}
-        </Avatar>
-        <Chip label="Live" color="success" size="small" />
-      </Box>
-      
-      {loading ? (
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 60 }}>
-          <CircularProgress size={40} />
-        </Box>
-      ) : (
-        <>
-          <Typography variant="h4" component="div" sx={{ fontWeight: 'bold', mb: 1 }}>
-            {value}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" gutterBottom>
-            {title}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {subtitle}
-          </Typography>
-          {progress && (
-            <Box sx={{ mt: 2 }}>
-              <LinearProgress 
-                variant="determinate" 
-                value={progress} 
-                sx={{ height: 6, borderRadius: 3 }}
-              />
-              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                {progress}% of target
-              </Typography>
-            </Box>
-          )}
-        </>
-      )}
-    </CardContent>
-  </Card>
-);
-
-const QuickActionCard = ({ title, description, icon, action, color }) => (
-  <Card sx={{ height: '100%', cursor: 'pointer' }} onClick={action}>
-    <CardContent sx={{ textAlign: 'center', py: 3 }}>
-      <Avatar sx={{ bgcolor: `${color}.light`, color: `${color}.main`, width: 56, height: 56, mx: 'auto', mb: 2 }}>
-        {icon}
-      </Avatar>
-      <Typography variant="h6" component="div" gutterBottom>
-        {title}
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        {description}
-      </Typography>
-    </CardContent>
-  </Card>
-);
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null);
@@ -148,196 +85,6 @@ function Dashboard() {
     return () => clearInterval(interval);
   }, []);
 
-  // Mock data fallback if backend is not available
-  const fallbackData = {
-    stats: [
-      {
-        title: 'Active Calls',
-        value: '12',
-        subtitle: 'Currently in progress',
-        icon: <CallIcon />,
-        color: 'primary',
-        progress: 75,
-      },
-      {
-        title: 'Avg Response Time',
-        value: '280ms',
-        subtitle: 'Target: <500ms',
-        icon: <SpeedIcon />,
-        color: 'success',
-        progress: 94,
-      },
-      {
-        title: 'Language Switches',
-        value: '8',
-        subtitle: 'Spanish ↔ English',
-        icon: <LanguageIcon />,
-        color: 'info',
-        progress: 60,
-      },
-      {
-        title: 'Success Rate',
-        value: '99.2%',
-        subtitle: 'Last 24 hours',
-        icon: <TrendingUpIcon />,
-        color: 'success',
-        progress: 99,
-      },
-    ],
-    quickActions: [
-      {
-        title: 'Iniciar Nueva Llamada',
-        description: 'Iniciar una sesión de llamada de prueba',
-        icon: <PlayIcon />,
-        color: 'success',
-        action: () => console.log('Start new call'),
-      },
-      {
-        title: 'Configurar Agente',
-        description: 'Personalizar voz y comportamiento',
-        icon: <BuildIcon />,
-        color: 'primary',
-        action: () => console.log('Configure agent'),
-      },
-      {
-        title: 'Ver Analíticas',
-        description: 'Métricas detalladas de rendimiento',
-        icon: <TrendingUpIcon />,
-        color: 'info',
-        action: () => console.log('View analytics'),
-      },
-      {
-        title: 'Configuración del Sistema',
-        description: 'Gestionar integraciones y claves API',
-        icon: <SettingsIcon />,
-        color: 'warning',
-        action: () => console.log('System settings'),
-      },
-    ],
-    recentActivity: [
-      {
-        type: 'Llamada Iniciada',
-        description: 'Llamada entrante de +1 (555) 123-4567',
-        time: 'hace 2 minutos',
-        status: 'active',
-      },
-      {
-        type: 'Cambio de Idioma',
-        description: 'Cambió de español a inglés',
-        time: 'hace 5 minutos',
-        status: 'completed',
-      },
-      {
-        type: 'Llamada Terminada',
-        description: 'Llamada con +1 (555) 987-6543 completada',
-        time: 'hace 8 minutos',
-        status: 'completed',
-      },
-      {
-        type: 'Alerta de Rendimiento',
-        description: 'Tiempo de respuesta excedió el umbral de 500ms',
-        time: 'hace 12 minutos',
-        status: 'warning',
-      },
-    ],
-  };
-
-  // Use real data if available, otherwise fallback with dynamic translations
-  const stats = dashboardData?.performance?.stats || [
-    {
-      title: t('dashboard.activeCalls'),
-      value: '12',
-      subtitle: t('dashboard.activeCallsDesc'),
-      icon: <CallIcon />,
-      color: 'primary',
-      progress: 75,
-    },
-    {
-      title: t('dashboard.avgResponseTime'),
-      value: '280ms',
-      subtitle: t('dashboard.avgResponseTimeDesc'),
-      icon: <SpeedIcon />,
-      color: 'success',
-      progress: 94,
-    },
-    {
-      title: t('dashboard.languageSwitches'),
-      value: '8',
-      subtitle: t('dashboard.languageSwitchesDesc'),
-      icon: <LanguageIcon />,
-      color: 'info',
-      progress: 60,
-    },
-    {
-      title: t('dashboard.successRate'),
-      value: '99.2%',
-      subtitle: t('dashboard.successRateDesc'),
-      icon: <TrendingUpIcon />,
-      color: 'success',
-      progress: 99,
-    },
-  ];
-  
-  // Crear acciones rápidas con traducciones dinámicas
-  const quickActions = [
-    {
-      title: t('dashboard.startNewCall'),
-      description: t('dashboard.startNewCallDesc'),
-      icon: <PlayIcon />,
-      color: 'success',
-      action: () => console.log('Start new call'),
-    },
-    {
-      title: t('dashboard.configureAgent'),
-      description: t('dashboard.configureAgentDesc'),
-      icon: <BuildIcon />,
-      color: 'primary',
-      action: () => console.log('Configure agent'),
-    },
-    {
-      title: t('dashboard.viewAnalytics'),
-      description: t('dashboard.viewAnalyticsDesc'),
-      icon: <TrendingUpIcon />,
-      color: 'info',
-      action: () => console.log('View analytics'),
-    },
-    {
-      title: t('dashboard.systemSettings'),
-      description: t('dashboard.systemSettingsDesc'),
-      icon: <SettingsIcon />,
-      color: 'warning',
-      action: () => console.log('System settings'),
-    },
-  ];
-  
-  // Crear actividad reciente con traducciones dinámicas
-  const recentActivity = [
-    {
-      type: t('dashboard.callStarted'),
-      description: t('dashboard.callStartedDesc'),
-      time: t('dashboard.minutesAgo', { count: 2 }),
-      status: 'active',
-    },
-    {
-      type: t('dashboard.languageSwitch'),
-      description: t('dashboard.languageSwitchDesc'),
-      time: t('dashboard.minutesAgo', { count: 5 }),
-      status: 'completed',
-    },
-    {
-      type: t('dashboard.callEnded'),
-      description: t('dashboard.callEndedDesc'),
-      time: t('dashboard.minutesAgo', { count: 8 }),
-      status: 'completed',
-    },
-    {
-      type: t('dashboard.performanceAlert'),
-      description: t('dashboard.performanceAlertDesc'),
-      time: t('dashboard.minutesAgo', { count: 12 }),
-      status: 'warning',
-    },
-  ];
-
   if (error) {
     return (
       <Box sx={{ p: 3 }}>
@@ -353,11 +100,14 @@ function Dashboard() {
 
   return (
     <Box>
-      {/* Header */}
+      {/* Header - At the very top */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          {t('dashboard.title')}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          <BarChartIcon sx={{ color: 'primary.main', fontSize: 28 }} />
+          <Typography variant="h4" component="h1">
+            {t('dashboard.title')}
+          </Typography>
+        </Box>
         <Typography variant="body1" color="text.secondary">
           {t('dashboard.subtitle')}
         </Typography>
@@ -402,146 +152,109 @@ function Dashboard() {
         </Box>
       </Box>
 
-      {/* Stats Grid */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {stats.map((stat, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <StatCard {...stat} loading={loading} />
-          </Grid>
-        ))}
-      </Grid>
 
-      {/* Quick Actions */}
-      <Typography variant="h5" component="h2" gutterBottom sx={{ mb: 3 }}>
-{t('dashboard.quickActions')}
-      </Typography>
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        {quickActions.map((action, index) => (
-          <Grid item xs={12} sm={6} md={3} key={index}>
-            <QuickActionCard {...action} />
-          </Grid>
-        ))}
-      </Grid>
-
-      {/* Recent Activity and System Status */}
+      {/* System Status */}
       <Grid container spacing={3}>
-        {/* Recent Activity */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" component="h3" gutterBottom>
-{t('dashboard.recentActivity')}
-              </Typography>
-              <Box>
-                {recentActivity.map((activity, index) => (
-                  <Box
-                    key={index}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      py: 2,
-                      borderBottom: index < recentActivity.length - 1 ? '1px solid' : 'none',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Avatar
-                      sx={{
-                        width: 32,
-                        height: 32,
-                        bgcolor: activity.status === 'active' ? 'success.light' : 
-                                activity.status === 'warning' ? 'warning.light' : 'info.light',
-                        color: activity.status === 'active' ? 'success.main' : 
-                               activity.status === 'warning' ? 'warning.main' : 'info.main',
-                      }}
-                    >
-                      <MicIcon fontSize="small" />
-                    </Avatar>
-                    <Box sx={{ ml: 2, flexGrow: 1 }}>
-                      <Typography variant="subtitle2" component="div">
-                        {activity.type}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {activity.description}
-                      </Typography>
-                    </Box>
-                    <Typography variant="caption" color="text.secondary">
-                      {activity.time}
-                    </Typography>
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
         {/* System Status */}
-        <Grid item xs={12} md={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6" component="h3" gutterBottom>
-{t('dashboard.systemStatus')}
-              </Typography>
+        <Grid item xs={12} md={6}>
+          <Card sx={{ borderRadius: 3 }}>
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                <MicIcon sx={{ color: 'success.main', fontSize: 28 }} />
+                <Typography variant="h5" component="h3" sx={{ fontWeight: 'bold' }}>
+                  {t('dashboard.systemStatus')}
+                </Typography>
+              </Box>
               
               {loading ? (
-                <Box sx={{ display: 'flex', justifyContent: 'center', py: 3 }}>
-                  <CircularProgress />
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+                  <CircularProgress size={40} />
                 </Box>
               ) : (
-                <List dense>
-                  <ListItem>
-                    <ListItemIcon>
-                      <MicIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary="Voice AI Agent" secondary="Online" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <MicIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary="STT Service" secondary="Online" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <MicIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary="TTS Service" secondary="Online" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <MicIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary="LLM Service" secondary="Online" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <MicIcon color="success" />
-                    </ListItemIcon>
-                    <ListItemText primary="Twilio Integration" secondary="Online" />
-                  </ListItem>
-                </List>
-              )}
-              
-              {dashboardData && (
-                <>
-                  <Typography variant="subtitle2" gutterBottom sx={{ mt: 2 }}>
-                    Performance Metrics
-                  </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Uptime</Typography>
-                      <Typography variant="body2">99.9%</Typography>
-                    </Box>
-                    <LinearProgress variant="determinate" value={99.9} sx={{ height: 6, borderRadius: 3 }} />
-                  </Box>
+                <Box>
+                  {[
+                    { name: 'Voice AI Agent', status: 'Online', icon: <MicIcon /> },
+                    { name: 'STT Service', status: 'Online', icon: <MicIcon /> },
+                    { name: 'TTS Service', status: 'Online', icon: <MicIcon /> },
+                    { name: 'LLM Service', status: 'Online', icon: <MicIcon /> },
+                    { name: 'Twilio Integration', status: 'Online', icon: <MicIcon /> },
+                  ].map((service, index) => (
+                    <Fade in timeout={1000 + index * 200} key={service.name}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          py: 2,
+                          px: 2,
+                          borderRadius: 2,
+                          mb: 1,
+                          bgcolor: 'success.light',
+                          border: '1px solid',
+                          borderColor: 'success.main',
+                        }}
+                      >
+                        <Avatar sx={{ bgcolor: 'success.main', color: 'white', mr: 2, width: 32, height: 32 }}>
+                          {service.icon}
+                        </Avatar>
+                        <Box sx={{ flexGrow: 1 }}>
+                          <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                            {service.name}
+                          </Typography>
+                          <Typography variant="caption" color="success.main" sx={{ fontWeight: 'bold' }}>
+                            {service.status}
+                          </Typography>
+                        </Box>
+                        <CheckCircleIcon sx={{ color: 'success.main' }} />
+                      </Box>
+                    </Fade>
+                  ))}
                   
-                  <Box sx={{ mb: 2 }}>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                      <Typography variant="body2">Response Time</Typography>
-                      <Typography variant="body2">280ms</Typography>
+                  {dashboardData && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold', mb: 2 }}>
+                        Métricas de Rendimiento
+                      </Typography>
+                      
+                      <Box sx={{ mb: 3 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Uptime</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main' }}>99.9%</Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={99.9} 
+                          sx={{ 
+                            height: 8, 
+                            borderRadius: 4,
+                            bgcolor: 'success.light',
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: 'success.main'
+                            }
+                          }} 
+                        />
+                      </Box>
+                      
+                      <Box sx={{ mb: 2 }}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Response Time</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', color: 'success.main' }}>280ms</Typography>
+                        </Box>
+                        <LinearProgress 
+                          variant="determinate" 
+                          value={94} 
+                          sx={{ 
+                            height: 8, 
+                            borderRadius: 4,
+                            bgcolor: 'success.light',
+                            '& .MuiLinearProgress-bar': {
+                              bgcolor: 'success.main'
+                            }
+                          }} 
+                        />
+                      </Box>
                     </Box>
-                    <LinearProgress variant="determinate" value={94} sx={{ height: 6, borderRadius: 3 }} />
-                  </Box>
-                </>
+                  )}
+                </Box>
               )}
             </CardContent>
           </Card>
