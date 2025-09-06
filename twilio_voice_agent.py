@@ -1274,6 +1274,35 @@ def language_info():
     }
 
 
+@app.route("/call-stats", methods=["GET"])
+def call_statistics():
+    """Get daily call statistics endpoint."""
+    try:
+        # Get current date for daily stats
+        today = datetime.now().date()
+        
+        # Mock daily statistics (in production, these would be stored in a database)
+        mock_stats = {
+            "date": today.isoformat(),
+            "total_calls": 18,
+            "answered_calls": 15,
+            "positive_calls": 12,
+            "missed_calls": 3,
+            "avg_call_duration": "4:32",
+            "success_rate": 85.7,
+            "answer_rate": 88.9,
+            "peak_hour": "14:00-15:00",
+            "last_updated": datetime.now().isoformat(),
+        }
+        
+        logger.info(f"📊 Call statistics requested for {today}")
+        return mock_stats
+        
+    except Exception as e:
+        logger.error(f"❌ Error getting call statistics: {e}")
+        return {"error": "Failed to get call statistics"}, 500
+
+
 async def main():
     """Main function to start the voice agent."""
     global voice_agent

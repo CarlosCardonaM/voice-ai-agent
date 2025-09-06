@@ -49,6 +49,11 @@ class VoiceAIApiService {
     return this.apiCall('/language');
   }
 
+  // Call Statistics
+  async getCallStatistics() {
+    return this.apiCall('/call-stats');
+  }
+
   // Test API Connections
   async testApiConnections(apiKeys) {
     const results = {};

@@ -12,12 +12,12 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Avatar,
   Badge,
   Chip,
 } from '@mui/material';
 import {
   Menu as MenuIcon,
+  Home as HomeIcon,
   Dashboard as DashboardIcon,
   Build as BuildIcon,
   PlayArrow as TestingIcon,
@@ -26,16 +26,17 @@ import {
   Settings as SettingsIcon,
   Notifications as NotificationsIcon,
   AccountCircle as AccountIcon,
-  Mic as MicIcon,
   Phone as PhoneIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import LanguageSelector from '../LanguageSelector/LanguageSelector';
+import Logo from '../Logo/Logo';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const drawerWidth = 280;
 
 const getMenuItems = (t) => [
+  { text: 'Inicio', icon: <HomeIcon />, path: '/inicio' },
   { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
   { text: t('navigation.builder'), icon: <BuildIcon />, path: '/builder' },
   { text: t('navigation.phoneNumbers'), icon: <PhoneIcon />, path: '/phone-numbers' },
@@ -64,15 +65,10 @@ function Layout({ children }) {
     <Box>
       {/* Logo and Title */}
       <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-        <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
-          <MicIcon />
-        </Avatar>
+        <Logo size="small" variant="primary" />
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 'bold', color: 'primary.main' }}>
-            {t('layout.appTitle')}
-          </Typography>
           <Typography variant="caption" color="text.secondary">
-            {t('layout.appSubtitle')}
+            Voice AI Agent Platform
           </Typography>
         </Box>
       </Box>
