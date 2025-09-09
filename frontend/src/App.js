@@ -13,7 +13,6 @@ import Inicio from './pages/Inicio/Inicio';
 import Dashboard from './pages/Dashboard/Dashboard';
 import Builder from './pages/Builder/Builder';
 import PhoneNumbers from './pages/PhoneNumbers/PhoneNumbers';
-import Testing from './pages/Testing/Testing';
 import Deploy from './pages/Deploy/Deploy';
 import Monitor from './pages/Monitor/Monitor';
 import Settings from './pages/Settings/Settings';
@@ -138,13 +137,6 @@ function App() {
             <Box sx={{ display: 'flex', minHeight: '100vh' }}>
               <Layout>
                 <PhoneNumbers />
-              </Layout>
-            </Box>
-          } />
-          <Route path="/testing" element={
-            <Box sx={{ display: 'flex', minHeight: '100vh' }}>
-              <Layout>
-                <Testing />
               </Layout>
             </Box>
           } />
