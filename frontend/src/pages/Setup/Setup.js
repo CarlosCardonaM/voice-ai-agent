@@ -19,6 +19,15 @@ import {
   FormControlLabel,
   Switch,
   Slider,
+  Container,
+  Fade,
+  Slide,
+  Zoom,
+  Paper,
+  Stack,
+  Divider,
+  IconButton,
+  Tooltip
 } from '@mui/material';
 import {
   Settings as SettingsIcon,
@@ -27,6 +36,12 @@ import {
   Psychology as PsychologyIcon,
   VolumeUp as VolumeUpIcon,
   CheckCircle as CheckIcon,
+  ArrowForward as ArrowForwardIcon,
+  ArrowBack as ArrowBackIcon,
+  Business as BusinessIcon,
+  SmartToy as AIIcon,
+  Phone as PhoneIcon,
+  Security as SecurityIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 
@@ -487,23 +502,73 @@ function Setup() {
   return (
     <Box sx={{ 
       minHeight: '100vh', 
-      background: '#000000',
+      bgcolor: 'black',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      p: 3
+      p: 3,
+      position: 'relative',
+      overflow: 'hidden'
     }}>
-      <Card sx={{ maxWidth: 800, width: '100%' }}>
-        <CardContent sx={{ p: 4 }}>
-          {/* Header */}
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Typography variant="h4" component="h1" gutterBottom>
-              🚀 Configuración Inicial
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Configura tu Voice AI Agent en unos simples pasos
-            </Typography>
-          </Box>
+      {/* Background Pattern */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage: `
+            radial-gradient(circle at 20% 80%, rgba(0, 188, 212, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(76, 175, 80, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 40% 40%, rgba(255, 152, 0, 0.1) 0%, transparent 50%)
+          `,
+          zIndex: 0
+        }}
+      />
+      
+      <Fade in timeout={1000}>
+        <Card sx={{ 
+          maxWidth: 900, 
+          width: '100%',
+          background: 'rgba(255, 255, 255, 0.05)',
+          backdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          borderRadius: 4,
+          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
+          position: 'relative',
+          zIndex: 1
+        }}>
+          <CardContent sx={{ p: 6 }}>
+            {/* Header */}
+            <Box sx={{ textAlign: 'center', mb: 6 }}>
+              <Typography 
+                variant="h3" 
+                component="h1" 
+                gutterBottom
+                sx={{
+                  fontWeight: 700,
+                  background: 'linear-gradient(45deg, #00BCD4, #4CAF50, #FF9800)',
+                  backgroundClip: 'text',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  fontFamily: 'Montserrat, sans-serif'
+                }}
+              >
+                Configuración Inicial
+              </Typography>
+              <Typography 
+                variant="h6" 
+                sx={{ 
+                  opacity: 0.8,
+                  fontWeight: 300,
+                  maxWidth: '600px',
+                  mx: 'auto'
+                }}
+              >
+                Configura tu Voice AI Agent en unos simples pasos
+              </Typography>
+            </Box>
 
           {/* Stepper */}
           <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
@@ -520,11 +585,28 @@ function Setup() {
           </Box>
 
           {/* Navigation Buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <Button
               disabled={activeStep === 0}
               onClick={handleBack}
               variant="outlined"
+              startIcon={<ArrowBackIcon />}
+              sx={{
+                px: 3,
+                py: 1.5,
+                borderRadius: 3,
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                color: 'rgba(255, 255, 255, 0.8)',
+                '&:hover': {
+                  borderColor: '#00BCD4',
+                  backgroundColor: 'rgba(0, 188, 212, 0.1)',
+                  color: '#00BCD4'
+                },
+                '&:disabled': {
+                  borderColor: 'rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.3)'
+                }
+              }}
             >
               Anterior
             </Button>
@@ -534,8 +616,21 @@ function Setup() {
                 <Button
                   variant="contained"
                   onClick={handleFinish}
-                  startIcon={<CheckIcon />}
+                  endIcon={<CheckIcon />}
                   size="large"
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 3,
+                    background: 'linear-gradient(45deg, #4CAF50, #45A049)',
+                    boxShadow: '0 8px 32px rgba(76, 175, 80, 0.3)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #45A049, #3D8B40)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(76, 175, 80, 0.4)'
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
                 >
                   Completar Configuración
                 </Button>
@@ -543,7 +638,21 @@ function Setup() {
                 <Button
                   variant="contained"
                   onClick={handleNext}
+                  endIcon={<ArrowForwardIcon />}
                   size="large"
+                  sx={{
+                    px: 4,
+                    py: 1.5,
+                    borderRadius: 3,
+                    background: 'linear-gradient(45deg, #00BCD4, #00ACC1)',
+                    boxShadow: '0 8px 32px rgba(0, 188, 212, 0.3)',
+                    '&:hover': {
+                      background: 'linear-gradient(45deg, #00ACC1, #0097A7)',
+                      transform: 'translateY(-2px)',
+                      boxShadow: '0 12px 40px rgba(0, 188, 212, 0.4)'
+                    },
+                    transition: 'all 0.3s ease'
+                  }}
                 >
                   Siguiente
                 </Button>
@@ -552,6 +661,7 @@ function Setup() {
           </Box>
         </CardContent>
       </Card>
+      </Fade>
     </Box>
   );
 }

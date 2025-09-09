@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Grid,
@@ -28,11 +28,22 @@ import {
   Speed as SpeedIcon,
   Save as SaveIcon,
   PlayArrow as PlayIcon,
+  Phone as PhoneIcon,
+  CallEnd as CallEndIcon,
 } from '@mui/icons-material';
 import { useLanguage } from '../../contexts/LanguageContext';
+import apiService from '../../services/api';
 
 function Builder() {
   const { t } = useLanguage();
+  const [loading, setLoading] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(null);
+  const [testStatus, setTestStatus] = useState(null);
+  const [callStatus, setCallStatus] = useState(null);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isCallActive, setIsCallActive] = useState(false);
+  const [callSid, setCallSid] = useState(null);
+  const [callDuration, setCallDuration] = useState(0);
   const [config, setConfig] = useState({
     // Basic Settings
     agentName: 'LATAM Customer Service Agent',
@@ -47,8 +58,8 @@ function Builder() {
     // Voice Settings
     ttsVoice: '21m00Tcm4TlvDq8ikWAM',
     ttsModel: 'eleven_multilingual_v2',
-    speechRate: 1.0,
-    voiceClarity: 0.8,
+    speechRate: 1.2, // Aumentado para hablar más rápido
+    voiceClarity: 0.9, // Aumentado para mejor claridad
     
     // STT Settings
     sttLanguage: 'es-LA',
@@ -58,15 +69,15 @@ function Builder() {
     
     // LLM Settings
     llmModel: 'gpt-4o-mini',
-    systemPrompt: 'Eres un agente de servicio al cliente útil, responde en español mexicano, maneja casos como reservas o soporte. Sé amigable, profesional y eficiente.',
-    maxTokens: 150,
-    temperature: 0.7,
+    systemPrompt: 'Eres un agente de servicio al cliente útil, responde en español mexicano, maneja casos como reservas o soporte. Sé amigable, profesional y eficiente. Responde de forma concisa y directa para mantener conversaciones fluidas.',
+    maxTokens: 100, // Reducido para respuestas más rápidas
+    temperature: 0.6, // Reducido para respuestas más consistentes y rápidas
     
     // Performance Settings
-    targetLatency: 500,
+    targetLatency: 200, // Reducido para respuesta más rápida
     enableInterruptionHandling: true,
     enableVoicemailDetection: true,
-    voicemailThreshold: 3.0,
+    voicemailThreshold: 2.0, // Reducido para detección más rápida
     
     // Advanced Settings
     enableSlangDetection: true,
@@ -75,6 +86,30 @@ function Builder() {
     enableCallRecording: false,
   });
 
+  // Cargar configuración guardada al montar el componente
+  useEffect(() => {
+    const savedConfig = localStorage.getItem('agentConfig');
+    if (savedConfig) {
+      try {
+        const parsedConfig = JSON.parse(savedConfig);
+        setConfig(parsedConfig);
+      } catch (error) {
+        console.error('Error loading saved configuration:', error);
+      }
+    }
+  }, []);
+
+  // Call duration timer
+  useEffect(() => {
+    let interval;
+    if (isCallActive) {
+      interval = setInterval(() => {
+        setCallDuration(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isCallActive]);
+
   const handleConfigChange = (key, value) => {
     setConfig(prev => ({
       ...prev,
@@ -82,14 +117,290 @@ function Builder() {
     }));
   };
 
-  const handleSave = () => {
-    console.log('Saving configuration:', config);
-    // TODO: Implement save functionality
+  const handleSave = async () => {
+    setLoading(true);
+    setSaveStatus(null);
+    
+    try {
+      // Guardar en localStorage
+      localStorage.setItem('agentConfig', JSON.stringify(config));
+      
+      // Enviar configuración al backend
+      await apiService.updateAgentConfig({
+        agentName: config.agentName,
+        systemPrompt: config.systemPrompt,
+        maxTokens: config.maxTokens,
+        temperature: config.temperature,
+        description: config.description,
+        primaryLanguage: config.primaryLanguage,
+        secondaryLanguage: config.secondaryLanguage,
+        ttsVoice: config.ttsVoice,
+        ttsModel: config.ttsModel,
+        speechRate: config.speechRate,
+        voiceClarity: config.voiceClarity,
+        sttLanguage: config.sttLanguage,
+        sttModel: config.sttModel,
+        llmModel: config.llmModel,
+        targetLatency: config.targetLatency,
+        enableInterruptionHandling: config.enableInterruptionHandling,
+        enableVoicemailDetection: config.enableVoicemailDetection,
+        enableSlangDetection: config.enableSlangDetection,
+        enableAudioQualityAnalysis: config.enableAudioQualityAnalysis,
+        enablePerformanceMonitoring: config.enablePerformanceMonitoring,
+        enableCallRecording: config.enableCallRecording
+      });
+      
+      setSaveStatus({
+        type: 'success',
+        message: 'Configuración guardada y aplicada al agente exitosamente'
+      });
+      
+      // Limpiar el mensaje después de 3 segundos
+      setTimeout(() => setSaveStatus(null), 3000);
+      
+    } catch (error) {
+      console.error('Error saving configuration:', error);
+      setSaveStatus({
+        type: 'error',
+        message: 'Error al guardar la configuración: ' + (error.message || 'Error desconocido')
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleTest = () => {
-    console.log('Testing configuration:', config);
-    // TODO: Implement test functionality
+  const handleTest = async () => {
+    setLoading(true);
+    setTestStatus(null);
+    
+    try {
+      // Simular prueba de configuración
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Validar configuración
+      const validationResults = validateConfiguration(config);
+      
+      if (validationResults.isValid) {
+        setTestStatus({
+          type: 'success',
+          message: 'Configuración validada exitosamente. El agente está listo para usar.'
+        });
+      } else {
+        setTestStatus({
+          type: 'warning',
+          message: `Configuración válida con advertencias: ${validationResults.warnings.join(', ')}`
+        });
+      }
+      
+      // Limpiar el mensaje después de 5 segundos
+      setTimeout(() => setTestStatus(null), 5000);
+      
+    } catch (error) {
+      setTestStatus({
+        type: 'error',
+        message: 'Error al probar la configuración'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleExport = () => {
+    const dataStr = JSON.stringify(config, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    
+    const exportFileDefaultName = `agent-config-${new Date().toISOString().split('T')[0]}.json`;
+    
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+  };
+
+  const handleImport = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedConfig = JSON.parse(e.target.result);
+          setConfig(importedConfig);
+          setSaveStatus({
+            type: 'success',
+            message: 'Configuración importada exitosamente'
+          });
+          setTimeout(() => setSaveStatus(null), 3000);
+        } catch (error) {
+          setSaveStatus({
+            type: 'error',
+            message: 'Error al importar la configuración. Verifica que el archivo sea válido.'
+          });
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const handleRealCall = async () => {
+    if (!phoneNumber.trim()) {
+      setCallStatus({
+        type: 'error',
+        message: 'Por favor ingresa un número telefónico'
+      });
+      return;
+    }
+
+    setLoading(true);
+    setCallStatus(null);
+    
+    try {
+      // Primero guardar TODA la configuración
+      await apiService.updateAgentConfig({
+        agentName: config.agentName,
+        systemPrompt: config.systemPrompt,
+        maxTokens: config.maxTokens,
+        temperature: config.temperature,
+        description: config.description,
+        primaryLanguage: config.primaryLanguage,
+        secondaryLanguage: config.secondaryLanguage,
+        autoLanguageDetection: config.autoLanguageDetection,
+        languageSwitchThreshold: config.languageSwitchThreshold,
+        ttsVoice: config.ttsVoice,
+        ttsModel: config.ttsModel,
+        speechRate: config.speechRate,
+        voiceClarity: config.voiceClarity,
+        sttLanguage: config.sttLanguage,
+        sttModel: config.sttModel,
+        enablePunctuation: config.enablePunctuation,
+        enableProfanityFilter: config.enableProfanityFilter,
+        llmModel: config.llmModel,
+        targetLatency: config.targetLatency,
+        voicemailThreshold: config.voicemailThreshold,
+        enableInterruptionHandling: config.enableInterruptionHandling,
+        enableVoicemailDetection: config.enableVoicemailDetection,
+        enableSlangDetection: config.enableSlangDetection,
+        enableAudioQualityAnalysis: config.enableAudioQualityAnalysis,
+        enablePerformanceMonitoring: config.enablePerformanceMonitoring,
+        enableCallRecording: config.enableCallRecording
+      });
+
+      // Luego hacer la llamada con TODA la configuración
+      const response = await apiService.makeRealCall(phoneNumber, {
+        agent_name: config.agentName,
+        system_prompt: config.systemPrompt,
+        max_tokens: config.maxTokens,
+        temperature: config.temperature,
+        description: config.description,
+        primary_language: config.primaryLanguage,
+        secondary_language: config.secondaryLanguage,
+        auto_language_detection: config.autoLanguageDetection,
+        language_switch_threshold: config.languageSwitchThreshold,
+        tts_voice: config.ttsVoice,
+        tts_model: config.ttsModel,
+        speech_rate: config.speechRate,
+        voice_clarity: config.voiceClarity,
+        stt_language: config.sttLanguage,
+        stt_model: config.sttModel,
+        enable_punctuation: config.enablePunctuation,
+        enable_profanity_filter: config.enableProfanityFilter,
+        llm_model: config.llmModel,
+        target_latency: config.targetLatency,
+        voicemail_threshold: config.voicemailThreshold,
+        enable_interruption_handling: config.enableInterruptionHandling,
+        enable_voicemail_detection: config.enableVoicemailDetection,
+        enable_slang_detection: config.enableSlangDetection,
+        enable_audio_quality_analysis: config.enableAudioQualityAnalysis,
+        enable_performance_monitoring: config.enablePerformanceMonitoring,
+        enable_call_recording: config.enableCallRecording
+      });
+
+      setCallStatus({
+        type: 'success',
+        message: `Llamada iniciada exitosamente a ${phoneNumber}. Call SID: ${response.call_sid}`
+      });
+
+      // Activar estado de llamada
+      setIsCallActive(true);
+      setCallSid(response.call_sid);
+      setCallDuration(0);
+
+      // Limpiar el mensaje después de 10 segundos
+      setTimeout(() => setCallStatus(null), 10000);
+      
+    } catch (error) {
+      console.error('Error making real call:', error);
+      setCallStatus({
+        type: 'error',
+        message: 'Error al realizar la llamada: ' + (error.message || 'Error desconocido')
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEndCall = async () => {
+    if (!callSid) return;
+    
+    setLoading(true);
+    try {
+      await apiService.endRealCall(callSid);
+      setIsCallActive(false);
+      setCallSid(null);
+      setCallDuration(0);
+      setCallStatus({
+        type: 'info',
+        message: 'Llamada terminada exitosamente'
+      });
+      setTimeout(() => setCallStatus(null), 5000);
+    } catch (error) {
+      console.error('Error ending call:', error);
+      setCallStatus({
+        type: 'error',
+        message: 'Error al terminar la llamada: ' + (error.message || 'Error desconocido')
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para validar la configuración
+  const validateConfiguration = (config) => {
+    const warnings = [];
+    
+    // Validar nombre del agente
+    if (!config.agentName || config.agentName.length < 3) {
+      warnings.push('El nombre del agente debe tener al menos 3 caracteres');
+    }
+    
+    // Validar descripción
+    if (!config.description || config.description.length < 10) {
+      warnings.push('La descripción debe tener al menos 10 caracteres');
+    }
+    
+    // Validar prompt del sistema
+    if (!config.systemPrompt || config.systemPrompt.length < 20) {
+      warnings.push('El prompt del sistema debe ser más detallado');
+    }
+    
+    // Validar tokens máximos
+    if (config.maxTokens < 50 || config.maxTokens > 500) {
+      warnings.push('Los tokens máximos deben estar entre 50 y 500');
+    }
+    
+    // Validar temperatura
+    if (config.temperature < 0.1 || config.temperature > 1.0) {
+      warnings.push('La temperatura debe estar entre 0.1 y 1.0');
+    }
+    
+    // Validar latencia objetivo
+    if (config.targetLatency < 100 || config.targetLatency > 2000) {
+      warnings.push('La latencia objetivo debe estar entre 100ms y 2000ms');
+    }
+    
+    return {
+      isValid: warnings.length === 0,
+      warnings: warnings
+    };
   };
 
   const voiceOptions = [
@@ -114,41 +425,207 @@ function Builder() {
   ];
 
   return (
-    <Box>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: 'black',
+      p: 3
+    }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white' }}>
 {t('builder.title')}
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" sx={{ color: 'grey.300' }}>
 {t('builder.subtitle')}
         </Typography>
       </Box>
 
+      {/* Status Messages */}
+      {saveStatus && (
+        <Alert 
+          severity={saveStatus.type} 
+          sx={{ mb: 2 }}
+          onClose={() => setSaveStatus(null)}
+        >
+          {saveStatus.message}
+        </Alert>
+      )}
+      
+      {testStatus && (
+        <Alert 
+          severity={testStatus.type} 
+          sx={{ mb: 2 }}
+          onClose={() => setTestStatus(null)}
+        >
+          {testStatus.message}
+        </Alert>
+      )}
+
+      {callStatus && (
+        <Alert 
+          severity={callStatus.type} 
+          sx={{ mb: 2 }}
+          onClose={() => setCallStatus(null)}
+        >
+          {callStatus.message}
+        </Alert>
+      )}
+
+      {/* Call Status Display */}
+      {isCallActive && (
+        <Box sx={{ 
+          mb: 3, 
+          p: 3, 
+          bgcolor: 'success.dark', 
+          borderRadius: 2,
+          border: '2px solid',
+          borderColor: 'success.main',
+          position: 'relative',
+          overflow: 'hidden'
+        }}>
+          {/* Animated background */}
+          <Box sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%)',
+            animation: 'shimmer 2s infinite',
+            '@keyframes shimmer': {
+              '0%': { transform: 'translateX(-100%)' },
+              '100%': { transform: 'translateX(100%)' }
+            }
+          }} />
+          
+          <Box sx={{ position: 'relative', zIndex: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Box sx={{
+                  width: 12,
+                  height: 12,
+                  borderRadius: '50%',
+                  bgcolor: 'success.light',
+                  animation: 'pulse 1.5s infinite',
+                  '@keyframes pulse': {
+                    '0%': { opacity: 1, transform: 'scale(1)' },
+                    '50%': { opacity: 0.5, transform: 'scale(1.2)' },
+                    '100%': { opacity: 1, transform: 'scale(1)' }
+                  }
+                }} />
+                <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                  🔴 LLAMADA ACTIVA
+                </Typography>
+              </Box>
+              <Typography variant="h5" sx={{ color: 'white', fontFamily: 'monospace' }}>
+                {Math.floor(callDuration / 60)}:{(callDuration % 60).toString().padStart(2, '0')}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+              <Typography variant="body1" sx={{ color: 'white' }}>
+                <strong>Número:</strong> {phoneNumber}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255,255,255,0.8)' }}>
+                <strong>SID:</strong> {callSid}
+              </Typography>
+            </Box>
+            
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button
+                variant="contained"
+                color="error"
+                startIcon={<CallEndIcon />}
+                onClick={handleEndCall}
+                disabled={loading}
+                sx={{ 
+                  bgcolor: 'error.main',
+                  '&:hover': { bgcolor: 'error.dark' }
+                }}
+              >
+                Terminar Llamada
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Phone Number Input */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          label="Número Telefónico para Llamada Real"
+          placeholder="+524779083304"
+          value={phoneNumber}
+          onChange={(e) => setPhoneNumber(e.target.value)}
+          variant="outlined"
+          helperText="Ingresa el número telefónico al que quieres hacer la llamada de prueba"
+          sx={{ mb: 2 }}
+        />
+      </Box>
+
       {/* Action Buttons */}
-      <Box sx={{ mb: 4, display: 'flex', gap: 2 }}>
+      <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
         <Button
           variant="contained"
           startIcon={<SaveIcon />}
           onClick={handleSave}
           size="large"
+          disabled={loading}
         >
-{t('builder.saveConfiguration')}
+          {loading ? 'Guardando...' : t('builder.saveConfiguration')}
         </Button>
         <Button
           variant="outlined"
           startIcon={<PlayIcon />}
           onClick={handleTest}
           size="large"
+          disabled={loading}
         >
-{t('builder.testConfiguration')}
+          {loading ? 'Probando...' : t('builder.testConfiguration')}
+        </Button>
+        <Button
+          variant="outlined"
+          onClick={handleExport}
+          size="large"
+          disabled={loading}
+        >
+          Exportar
+        </Button>
+        <Button
+          variant="outlined"
+          component="label"
+          size="large"
+          disabled={loading}
+        >
+          Importar
+          <input
+            type="file"
+            hidden
+            accept=".json"
+            onChange={handleImport}
+          />
+        </Button>
+        <Button
+          variant="contained"
+          color="success"
+          startIcon={<PhoneIcon />}
+          onClick={handleRealCall}
+          size="large"
+          disabled={loading || isCallActive}
+        >
+          {isCallActive ? 'Llamada en Progreso' : 'Llamada Real'}
         </Button>
       </Box>
 
       <Grid container spacing={3}>
         {/* Basic Settings */}
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'primary.light', color: 'primary.main', mr: 2 }}>
@@ -206,7 +683,11 @@ label={t('builder.secondaryLanguage')}
 
         {/* Language Settings */}
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', mr: 2 }}>
@@ -255,7 +736,11 @@ label={t('builder.autoLanguageDetection')}
 
         {/* Voice Settings */}
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'success.light', color: 'success.main', mr: 2 }}>
@@ -311,7 +796,11 @@ label={t('builder.ttsVoice')}
 
         {/* STT Settings */}
         <Grid item xs={12} md={6}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'warning.light', color: 'warning.main', mr: 2 }}>
@@ -366,7 +855,11 @@ label={t('builder.ttsVoice')}
 
         {/* LLM Settings */}
         <Grid item xs={12}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'secondary.light', color: 'secondary.main', mr: 2 }}>
@@ -436,7 +929,11 @@ label={t('builder.ttsVoice')}
 
         {/* Performance Settings */}
         <Grid item xs={12}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <Avatar sx={{ bgcolor: 'info.light', color: 'info.main', mr: 2 }}>

@@ -50,7 +50,7 @@ const translations = {
     navigation: {
       dashboard: 'Dashboard',
       builder: 'Constructor',
-      phoneNumbers: 'Números Telefónicos',
+      phoneNumbers: 'Base de Datos',
       testing: 'Pruebas',
       deploy: 'Desplegar',
       monitor: 'Monitoreo',
@@ -173,9 +173,9 @@ const translations = {
       connectionTestFailed: 'Prueba de conexión fallida',
       testConnectionsHelper: 'Haz clic en "Probar Conexiones" para verificar que tus claves API funcionan correctamente.'
     },
-    // Phone Numbers Page
+    // Database Page
     phoneNumbers: {
-      title: 'Números Telefónicos',
+      title: 'Base de Datos',
       subtitle: 'Gestiona y organiza los números telefónicos para tus llamadas automáticas',
       totalNumbers: 'Total de Números',
       refresh: 'Actualizar',
@@ -287,7 +287,7 @@ const translations = {
     navigation: {
       dashboard: 'Dashboard',
       builder: 'Builder',
-      phoneNumbers: 'Phone Numbers',
+      phoneNumbers: 'Database',
       testing: 'Testing',
       deploy: 'Deploy',
       monitor: 'Monitor',
@@ -457,9 +457,9 @@ const translations = {
       connectionTestFailed: 'Connection test failed',
       testConnectionsHelper: 'Click "Test Connections" to verify your API keys are working correctly.'
     },
-    // Phone Numbers Page
+    // Database Page
     phoneNumbers: {
-      title: 'Phone Numbers',
+      title: 'Database',
       subtitle: 'Manage and organize phone numbers for your automated calls',
       totalNumbers: 'Total Numbers',
       refresh: 'Refresh',

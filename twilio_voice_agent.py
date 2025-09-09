@@ -17,6 +17,7 @@ Features:
 """
 
 import asyncio
+import json
 import logging
 import os
 import statistics
@@ -28,8 +29,9 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 from dotenv import load_dotenv
-from flask import Flask, Response, request
+from flask import Flask, Response, request, jsonify
 from flask_cors import CORS
+from twilio.rest import Client
 
 # Load environment variables
 load_dotenv()
@@ -37,6 +39,18 @@ load_dotenv()
 # Configure logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
+
+# Initialize Twilio Client
+twilio_account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+twilio_auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+twilio_phone_number = os.getenv("TWILIO_PHONE_NUMBER")
+
+if twilio_account_sid and twilio_auth_token:
+    twilio_client = Client(twilio_account_sid, twilio_auth_token)
+    logger.info("✅ Twilio client initialized successfully")
+else:
+    twilio_client = None
+    logger.warning("⚠️ Twilio credentials not found in environment variables")
 
 # Import Pipecat components
 try:
@@ -71,30 +85,35 @@ class LanguageManager:
             "es-LA": {
                 "name": "Spanish (LATAM)",
                 "tts_voice": "21m00Tcm4TlvDq8ikWAM",  # Mexican Spanish
-                "greeting": "Hola, soy tu agente AI para LATAM. ¿En qué puedo ayudarte?",
-                "consent": "Esta llamada puede grabarse para calidad. ¿Deseas continuar?",
+                "greeting": "¡Hola! Soy Victoria de Anthana AI, especializada en soluciones de inteligencia artificial para negocios. ¿En qué puedo ayudarte hoy?",
+                "consent": "Hola, soy Victoria de Anthana AI. ¿En qué puedo ayudarte hoy?",
                 "instructions": "Por favor responde sí o no.",
                 "no_response": "No se recibió respuesta. Llamada terminada.",
                 "goodbye": "Entendido. Llamada terminada. ¡Que tengas un buen día!",
                 "system_prompt": (
-                    "Eres un agente de servicio al cliente útil, responde en español "
-                    "mexicano, maneja casos como reservas o soporte. Sé amigable, "
-                    "profesional y eficiente. Entiendes y usas expresiones mexicanas "
-                    "coloquiales cuando es apropiado."
+                    "Tu nombre es Victoria de Anthana AI, una empresa especializada en implementar "
+                    "soluciones de inteligencia artificial para negocios. Tu misión es hablar con el "
+                    "cliente de forma profesional, empática y persuasiva para mostrarle cómo nuestras "
+                    "soluciones de IA pueden transformar su negocio. Sé conversacional, haz preguntas "
+                    "relevantes sobre su negocio, y ofrece valor específico. NUNCA menciones grabación "
+                    "de llamadas. Mantén un tono profesional pero cercano."
                 ),
             },
             "en-US": {
                 "name": "English (US)",
                 "tts_voice": "21m00Tcm4TlvDq8ikWAM",  # Same voice, different language
-                "greeting": "Hello, I'm your AI agent for LATAM. How can I help you?",
-                "consent": "This call may be recorded for quality purposes. Do you wish to continue?",
+                "greeting": "Hello! I'm Victoria from Anthana AI, specialized in artificial intelligence solutions for businesses. How can I help you today?",
+                "consent": "Hello, I'm Victoria from Anthana AI. How can I help you today?",
                 "instructions": "Please answer yes or no.",
                 "no_response": "No response received. Call terminated.",
                 "goodbye": "Understood. Call terminated. Have a great day!",
                 "system_prompt": (
-                    "You are a helpful customer service agent, respond in English, "
-                    "handle cases like reservations or support. Be friendly, "
-                    "professional, and efficient."
+                    "Your name is Victoria from Anthana AI, a company specialized in implementing "
+                    "artificial intelligence solutions for businesses. Your mission is to speak with "
+                    "the client in a professional, empathetic and persuasive manner to show them how "
+                    "our AI solutions can transform their business. Be conversational, ask relevant "
+                    "questions about their business, and offer specific value. NEVER mention call "
+                    "recording. Maintain a professional but approachable tone."
                 ),
             },
         }
@@ -891,16 +910,179 @@ class TwilioVoiceAgent:
         say = ET.SubElement(root, "Say", language="es-MX")  # Default to Spanish for greeting
         say.text = self.language_manager.get_greeting()
 
-        # Connect to voice stream
-        connect = ET.SubElement(root, "Connect")
-        ET.SubElement(connect, "Stream", url="/voice-stream")
+        # Start conversation with Gather
+        gather = ET.SubElement(root, "Gather", 
+                             action="/conversation",
+                             method="POST",
+                             input="speech",
+                             timeout="10",
+                             speechTimeout="auto",
+                             language="es-MX")
+        
+        # If no input, redirect to conversation
+        redirect = ET.SubElement(root, "Redirect")
+        redirect.text = "/conversation"
 
         return ET.tostring(root, encoding="unicode")
+
+    def generate_ai_response(self, user_input: str) -> str:
+        """Generate AI response to user input using the configured system prompt."""
+        try:
+            if not user_input.strip():
+                return "No entendí lo que dijiste. ¿Puedes repetirlo?"
+            
+            # Get the system prompt from language manager
+            system_prompt = self.language_manager.get_system_prompt()
+            current_language = self.language_manager.current_language
+            
+            # Enhanced AI response based on system prompt context
+            user_lower = user_input.lower()
+            
+            # Check if user asks about recording - ALWAYS deny recording
+            if any(word in user_lower for word in ["grabar", "grabación", "record", "recording", "grabando"]):
+                if current_language == "es-LA":
+                    return "No, no estoy grabando esta llamada. Esta es una conversación privada entre nosotros. ¿En qué más puedo ayudarte?"
+                else:
+                    return "No, I'm not recording this call. This is a private conversation between us. How else can I help you?"
+            
+            # Check if user is greeting
+            if any(word in user_lower for word in ["hola", "hello", "hi", "buenos días", "buenas tardes"]):
+                if current_language == "es-LA":
+                    return "¡Hola! Soy Victoria de Anthana AI, especializada en soluciones de inteligencia artificial para negocios. ¿En qué puedo ayudarte hoy?"
+                else:
+                    return "Hello! I'm Victoria from Anthana AI, specialized in artificial intelligence solutions for businesses. How can I help you today?"
+            
+            # Check if user is thanking
+            elif any(word in user_lower for word in ["gracias", "thanks", "thank you"]):
+                if current_language == "es-LA":
+                    return "¡De nada! Es un placer ayudarte. ¿Hay algo más en lo que pueda asistirte con soluciones de IA?"
+                else:
+                    return "You're welcome! It's my pleasure to help. Is there anything else I can assist you with regarding AI solutions?"
+            
+            # Check if user is saying goodbye
+            elif any(word in user_lower for word in ["adiós", "bye", "goodbye", "hasta luego"]):
+                if current_language == "es-LA":
+                    return "¡Hasta luego! Fue un placer hablar contigo. Que tengas un excelente día."
+                else:
+                    return "Goodbye! It was a pleasure talking with you. Have a great day!"
+            
+            # Check if user is asking how we are
+            elif any(word in user_lower for word in ["cómo estás", "how are you", "qué tal"]):
+                if current_language == "es-LA":
+                    return "¡Estoy muy bien, gracias por preguntar! Estoy aquí para ayudarte con soluciones de inteligencia artificial. ¿Y tú cómo estás?"
+                else:
+                    return "I'm doing great, thank you for asking! I'm here to help you with artificial intelligence solutions. How are you doing?"
+            
+            # Check if user needs help
+            elif any(word in user_lower for word in ["ayuda", "help", "soporte"]):
+                if current_language == "es-LA":
+                    return "Claro, estoy aquí para ayudarte. Como especialista en inteligencia artificial, puedo asistirte con implementaciones de IA para tu negocio. ¿Qué necesitas?"
+                else:
+                    return "Of course, I'm here to help. As an artificial intelligence specialist, I can assist you with AI implementations for your business. What do you need?"
+            
+            # Business-related responses
+            elif any(word in user_lower for word in ["negocio", "empresa", "business", "company", "trabajo", "work"]):
+                if current_language == "es-LA":
+                    return "Excelente, me encanta hablar sobre negocios. En Anthana AI ayudamos a empresas a implementar soluciones de inteligencia artificial que pueden transformar sus operaciones. ¿Podrías contarme más sobre tu negocio?"
+                else:
+                    return "Excellent, I love talking about business. At Anthana AI we help companies implement artificial intelligence solutions that can transform their operations. Could you tell me more about your business?"
+            
+            # AI-related responses
+            elif any(word in user_lower for word in ["ia", "inteligencia", "artificial", "ai", "intelligence", "automatización", "automation"]):
+                if current_language == "es-LA":
+                    return "¡Perfecto! La inteligencia artificial es mi especialidad. En Anthana AI tenemos soluciones específicas para diferentes industrias. ¿En qué sector está tu negocio?"
+                else:
+                    return "Perfect! Artificial intelligence is my specialty. At Anthana AI we have specific solutions for different industries. What sector is your business in?"
+            
+            # Default response based on system prompt context
+            else:
+                if current_language == "es-LA":
+                    return f"Entiendo que mencionaste '{user_input}'. Como Victoria de Anthana AI, estoy aquí para ayudarte con soluciones de inteligencia artificial que pueden transformar tu negocio. ¿Podrías contarme más sobre lo que necesitas?"
+                else:
+                    return f"I understand you mentioned '{user_input}'. As Victoria from Anthana AI, I'm here to help you with artificial intelligence solutions that can transform your business. Could you tell me more about what you need?"
+                    
+        except Exception as e:
+            logger.error(f"❌ Error generating AI response: {e}")
+            return "Lo siento, no pude procesar tu mensaje. ¿Puedes intentar de nuevo?"
 
 
 # Flask application
 app = Flask(__name__)
 voice_agent = None
+
+# Database file path
+DB_FILE = "phone_numbers_db.json"
+
+def load_phone_numbers_db():
+    """Load phone numbers from JSON file."""
+    try:
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+                return data.get('phoneNumbers', []), data.get('nextId', 1)
+        else:
+            # Default data if file doesn't exist
+            default_data = [
+                {
+                    "id": 1,
+                    "name": "Juan Pérez",
+                    "phoneNumber": "+1 (555) 123-4567",
+                    "type": "personal",
+                    "location": "México",
+                    "notes": "Cliente potencial",
+                    "tags": ["cliente", "potencial"],
+                    "lastCall": "2024-01-20"
+                },
+                {
+                    "id": 2,
+                    "name": "María García",
+                    "phoneNumber": "+1 (555) 987-6543",
+                    "type": "empresarial",
+                    "location": "España",
+                    "notes": "Empresa de tecnología",
+                    "tags": ["empresa", "tecnología"],
+                    "lastCall": "Nunca"
+                },
+                {
+                    "id": 3,
+                    "name": "Carlos López",
+                    "phoneNumber": "+1 (555) 456-7890",
+                    "type": "personal",
+                    "location": "Colombia",
+                    "notes": "Contacto personal",
+                    "tags": ["personal", "amigo"],
+                    "lastCall": "2024-01-18"
+                }
+            ]
+            return default_data, 4
+    except Exception as e:
+        logger.error(f"❌ Error loading phone numbers database: {e}")
+        return [], 1
+
+def save_phone_numbers_db(phone_numbers, next_id):
+    """Save phone numbers to JSON file."""
+    try:
+        data = {
+            "phoneNumbers": phone_numbers,
+            "nextId": next_id
+        }
+        logger.info(f"💾 Attempting to save to file: {DB_FILE}")
+        logger.info(f"💾 Current working directory: {os.getcwd()}")
+        with open(DB_FILE, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        logger.info(f"💾 Successfully saved {len(phone_numbers)} phone numbers to database")
+    except Exception as e:
+        logger.error(f"❌ Error saving phone numbers database: {e}")
+        logger.error(f"❌ Exception type: {type(e).__name__}")
+        logger.error(f"❌ Exception details: {str(e)}")
+
+# Global variables for phone numbers database
+phone_numbers_db = []
+next_id = 1
+
+# Load phone numbers database
+phone_numbers_db, next_id = load_phone_numbers_db()
+logger.info(f"📞 Loaded {len(phone_numbers_db)} phone numbers from database")
 
 # Enable CORS for all routes
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -990,16 +1172,46 @@ def consent_response():
         return Response("Error", status=500)
 
 
-@app.route("/voice-stream", methods=["POST"])
-def voice_stream():
-    """Handle real-time voice stream from Twilio."""
+@app.route("/conversation", methods=["POST"])
+def conversation():
+    """Handle conversation with the AI agent."""
     try:
-        # This endpoint would handle the WebSocket connection for real-time audio
-        # For now, we'll return a simple response
-        return Response("Voice stream endpoint", status=200)
-
+        call_sid = request.form.get("CallSid")
+        speech_result = request.form.get("SpeechResult", "")
+        
+        logger.info(f"🗣️ User said: '{speech_result}' for call {call_sid}")
+        
+        if not voice_agent:
+            return Response("Agent not available", status=500)
+        
+        # Generate AI response (simplified for now)
+        ai_response = voice_agent.generate_ai_response(speech_result)
+        
+        # Create TwiML response
+        root = ET.Element("Response")
+        
+        # Say AI response
+        say = ET.SubElement(root, "Say", language="es-MX")
+        say.text = ai_response
+        
+        # Continue conversation
+        gather = ET.SubElement(root, "Gather", 
+                             action="/conversation",
+                             method="POST",
+                             input="speech",
+                             timeout="10",
+                             speechTimeout="auto",
+                             language="es-MX")
+        
+        # If no input, say goodbye
+        say_goodbye = ET.SubElement(root, "Say", language="es-MX")
+        say_goodbye.text = voice_agent.language_manager.get_goodbye_message()
+        ET.SubElement(root, "Hangup")
+        
+        return Response(ET.tostring(root, encoding="unicode"), mimetype="text/xml")
+        
     except Exception as e:
-        logger.error(f"❌ Voice stream error: {e}")
+        logger.error(f"❌ Conversation error: {e}")
         return Response("Error", status=500)
 
 
@@ -1135,46 +1347,10 @@ def end_test_call():
 def get_phone_numbers():
     """Get all phone numbers from the database."""
     try:
-        # En producción, esto vendría de una base de datos real
-        # Por ahora, retornamos datos simulados
-        mock_data = [
-            {
-                "id": 1,
-                "name": "Juan Pérez",
-                "phoneNumber": "+1 (555) 123-4567",
-                "type": "personal",
-                "location": "México",
-                "notes": "Cliente potencial - interesado en servicios",
-                "tags": ["cliente", "potencial"],
-                "createdAt": "2024-01-15",
-                "lastCalled": "2024-01-20",
-            },
-            {
-                "id": 2,
-                "name": "María García",
-                "phoneNumber": "+1 (555) 987-6543",
-                "type": "business",
-                "location": "España",
-                "notes": "Empresa de tecnología",
-                "tags": ["empresa", "tecnología"],
-                "createdAt": "2024-01-10",
-                "lastCalled": None,
-            },
-            {
-                "id": 3,
-                "name": "Carlos López",
-                "phoneNumber": "+1 (555) 456-7890",
-                "type": "personal",
-                "location": "Colombia",
-                "notes": "Amigo de la universidad",
-                "tags": ["personal", "amigo"],
-                "createdAt": "2024-01-05",
-                "lastCalled": "2024-01-18",
-            },
-        ]
-        
-        logger.info(f"📞 Retrieved {len(mock_data)} phone numbers")
-        return {"phoneNumbers": mock_data}, 200
+        global phone_numbers_db
+        logger.info(f"📞 Retrieved {len(phone_numbers_db)} phone numbers")
+        logger.info(f"📞 Current contacts: {[c['name'] for c in phone_numbers_db]}")
+        return {"phoneNumbers": phone_numbers_db}, 200
         
     except Exception as e:
         logger.error(f"❌ Error getting phone numbers: {e}")
@@ -1193,9 +1369,10 @@ def create_phone_number():
             if field not in data:
                 return {"error": f"Missing required field: {field}"}, 400
         
-        # En producción, esto se guardaría en la base de datos
+        # Crear nuevo contacto en la base de datos
+        global phone_numbers_db, next_id
         new_number = {
-            "id": int(time.time()),  # ID temporal basado en timestamp
+            "id": next_id,
             "name": data["name"],
             "phoneNumber": data["phoneNumber"],
             "type": data["type"],
@@ -1205,6 +1382,13 @@ def create_phone_number():
             "createdAt": datetime.now().strftime("%Y-%m-%d"),
             "lastCalled": None,
         }
+        
+        # Agregar a la base de datos
+        phone_numbers_db.append(new_number)
+        next_id += 1
+        
+        logger.info(f"💾 Added new contact. Total contacts: {len(phone_numbers_db)}")
+        logger.info(f"💾 Contact details: {new_number['name']} - {new_number['phoneNumber']}")
         
         logger.info(f"📞 Created new phone number: {new_number['name']} - {new_number['phoneNumber']}")
         return {"phoneNumber": new_number}, 201
@@ -1220,9 +1404,32 @@ def update_phone_number(number_id):
     try:
         data = request.get_json()
         
-        # En producción, esto actualizaría la base de datos
+        # Buscar el contacto en la base de datos
+        contact_index = None
+        for i, contact in enumerate(phone_numbers_db):
+            if contact["id"] == number_id:
+                contact_index = i
+                break
+        
+        if contact_index is None:
+            return {"error": "Phone number not found"}, 404
+        
+        # Actualizar el contacto
+        phone_numbers_db[contact_index].update({
+            "name": data.get("name", phone_numbers_db[contact_index]["name"]),
+            "phoneNumber": data.get("phoneNumber", phone_numbers_db[contact_index]["phoneNumber"]),
+            "type": data.get("type", phone_numbers_db[contact_index]["type"]),
+            "location": data.get("location", phone_numbers_db[contact_index]["location"]),
+            "notes": data.get("notes", phone_numbers_db[contact_index]["notes"]),
+            "tags": data.get("tags", phone_numbers_db[contact_index]["tags"]),
+        })
+        
+        # Guardar en archivo
+        logger.info(f"💾 Saving {len(phone_numbers_db)} phone numbers to database file")
+        save_phone_numbers_db(phone_numbers_db, next_id)
+        
         logger.info(f"📞 Updated phone number ID {number_id}")
-        return {"message": "Phone number updated successfully"}, 200
+        return {"phoneNumber": phone_numbers_db[contact_index]}, 200
         
     except Exception as e:
         logger.error(f"❌ Error updating phone number: {e}")
@@ -1233,8 +1440,24 @@ def update_phone_number(number_id):
 def delete_phone_number(number_id):
     """Delete a phone number entry."""
     try:
-        # En producción, esto eliminaría de la base de datos
-        logger.info(f"📞 Deleted phone number ID {number_id}")
+        # Buscar y eliminar el contacto de la base de datos
+        contact_index = None
+        for i, contact in enumerate(phone_numbers_db):
+            if contact["id"] == number_id:
+                contact_index = i
+                break
+        
+        if contact_index is None:
+            return {"error": "Phone number not found"}, 404
+        
+        # Eliminar el contacto
+        deleted_contact = phone_numbers_db.pop(contact_index)
+        
+        # Guardar en archivo
+        logger.info(f"💾 Saving {len(phone_numbers_db)} phone numbers to database file")
+        save_phone_numbers_db(phone_numbers_db, next_id)
+        
+        logger.info(f"📞 Deleted phone number ID {number_id}: {deleted_contact['name']}")
         return {"message": "Phone number deleted successfully"}, 200
         
     except Exception as e:
@@ -1259,6 +1482,195 @@ def initiate_call(number_id):
     except Exception as e:
         logger.error(f"❌ Error initiating call: {e}")
         return {"error": str(e)}, 500
+
+
+@app.route("/update-agent-config", methods=["POST"])
+def update_agent_config():
+    """Update agent configuration from constructor."""
+    try:
+        data = request.get_json()
+        logger.info(f"📝 Received config update request: {data}")
+        
+        if not voice_agent:
+            logger.error("❌ Voice agent not available")
+            return {"error": "Voice agent not available"}, 500
+        
+        # Update system prompt
+        if "systemPrompt" in data:
+            voice_agent.language_manager.language_configs["es-LA"]["system_prompt"] = data["systemPrompt"]
+            voice_agent.language_manager.language_configs["en-US"]["system_prompt"] = data["systemPrompt"]
+            logger.info(f"✅ Updated system prompt: {data['systemPrompt'][:50]}...")
+        
+        # Update agent name
+        if "agentName" in data:
+            voice_agent.language_manager.language_configs["es-LA"]["greeting"] = f"¡Hola! Soy {data['agentName']} de Anthana AI, especializada en soluciones de inteligencia artificial para negocios. ¿En qué puedo ayudarte hoy?"
+            voice_agent.language_manager.language_configs["en-US"]["greeting"] = f"Hello! I'm {data['agentName']} from Anthana AI, specialized in artificial intelligence solutions for businesses. How can I help you today?"
+            logger.info(f"✅ Updated agent name: {data['agentName']}")
+        
+        # Update max tokens
+        if "maxTokens" in data:
+            voice_agent.language_manager.language_configs["es-LA"]["max_tokens"] = data["maxTokens"]
+            voice_agent.language_manager.language_configs["en-US"]["max_tokens"] = data["maxTokens"]
+            logger.info(f"✅ Updated max tokens: {data['maxTokens']}")
+        
+        # Update temperature
+        if "temperature" in data:
+            voice_agent.language_manager.language_configs["es-LA"]["temperature"] = data["temperature"]
+            voice_agent.language_manager.language_configs["en-US"]["temperature"] = data["temperature"]
+            logger.info(f"✅ Updated temperature: {data['temperature']}")
+        
+        logger.info("✅ Agent configuration updated successfully")
+        
+        return {
+            "status": "success",
+            "message": "Agent configuration updated successfully",
+            "config": data
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Update config error: {e}")
+        return {"error": str(e)}, 500
+
+@app.route("/test-config", methods=["POST"])
+def test_config():
+    """Test endpoint for configuration."""
+    try:
+        data = request.get_json()
+        logger.info(f"📝 Test config received: {data}")
+        
+        return {
+            "status": "success",
+            "message": "Configuration received successfully",
+            "received_data": data
+        }
+        
+    except Exception as e:
+        logger.error(f"❌ Test config error: {e}")
+        return {"error": str(e)}, 500
+
+@app.route("/real-call", methods=["POST"])
+def make_real_call():
+    """Make a real phone call using Twilio."""
+    try:
+        data = request.get_json()
+        if not data:
+            return {"error": "No data provided"}, 400
+
+        phone_number = data.get("phone_number")
+        if not phone_number:
+            return {"error": "Phone number is required"}, 400
+
+        # Actualizar configuración del agente con los datos enviados
+        if voice_agent:
+            # Update system prompt
+            if "system_prompt" in data:
+                voice_agent.language_manager.language_configs["es-LA"]["system_prompt"] = data["system_prompt"]
+                voice_agent.language_manager.language_configs["en-US"]["system_prompt"] = data["system_prompt"]
+                logger.info(f"✅ Updated system prompt for call: {data['system_prompt'][:50]}...")
+            
+            # Update agent name
+            if "agent_name" in data:
+                voice_agent.language_manager.language_configs["es-LA"]["greeting"] = f"¡Hola! Soy {data['agent_name']} de Anthana AI, especializada en soluciones de inteligencia artificial para negocios. ¿En qué puedo ayudarte hoy?"
+                voice_agent.language_manager.language_configs["en-US"]["greeting"] = f"Hello! I'm {data['agent_name']} from Anthana AI, specialized in artificial intelligence solutions for businesses. How can I help you today?"
+                logger.info(f"✅ Updated agent name for call: {data['agent_name']}")
+            
+            # Update max tokens
+            if "max_tokens" in data:
+                voice_agent.language_manager.language_configs["es-LA"]["max_tokens"] = data["max_tokens"]
+                voice_agent.language_manager.language_configs["en-US"]["max_tokens"] = data["max_tokens"]
+                logger.info(f"✅ Updated max tokens for call: {data['max_tokens']}")
+            
+            # Update temperature
+            if "temperature" in data:
+                voice_agent.language_manager.language_configs["es-LA"]["temperature"] = data["temperature"]
+                voice_agent.language_manager.language_configs["en-US"]["temperature"] = data["temperature"]
+                logger.info(f"✅ Updated temperature for call: {data['temperature']}")
+            
+            logger.info("✅ Agent configuration updated for real call")
+
+        # Verificar que Twilio esté configurado
+        if not twilio_client:
+            return {
+                "error": "Twilio not configured. Please check your API keys.",
+                "status": "error"
+            }, 500
+
+        # Crear la llamada usando Twilio
+        try:
+            # Para desarrollo, usar una URL temporal o simular la llamada
+            ngrok_url = os.getenv('NGROK_URL', 'https://webhook.site/unique-id')
+            webhook_url = f"{ngrok_url}/webhook"
+            
+            call = twilio_client.calls.create(
+                to=phone_number,
+                from_=twilio_phone_number,
+                url=webhook_url,
+                method='POST'
+            )
+            
+            call_sid = call.sid
+            logger.info(f"📞 Real call initiated: {call_sid} to {phone_number}")
+            
+            return {
+                "status": "success",
+                "call_sid": call_sid,
+                "phone_number": phone_number,
+                "message": "Real call initiated successfully"
+            }, 200
+            
+        except Exception as twilio_error:
+            logger.error(f"❌ Twilio error: {twilio_error}")
+            return {
+                "error": f"Twilio error: {str(twilio_error)}",
+                "status": "error"
+            }, 500
+        
+    except Exception as e:
+        logger.error(f"❌ Error making real call: {e}")
+        return {"error": str(e), "status": "error"}, 500
+
+
+@app.route("/end-real-call", methods=["POST"])
+def end_real_call():
+    """End a real phone call using Twilio."""
+    try:
+        data = request.get_json()
+        if not data:
+            return {"error": "No data provided"}, 400
+
+        call_sid = data.get("call_sid")
+        if not call_sid:
+            return {"error": "Call SID is required"}, 400
+
+        # Verificar que Twilio esté configurado
+        if not twilio_client:
+            return {
+                "error": "Twilio not configured. Please check your API keys.",
+                "status": "error"
+            }, 500
+
+        try:
+            # Terminar la llamada usando Twilio
+            call = twilio_client.calls(call_sid).update(status='completed')
+            
+            logger.info(f"📞 Real call ended: {call_sid}")
+            
+            return {
+                "status": "success",
+                "call_sid": call_sid,
+                "message": "Real call ended successfully"
+            }, 200
+            
+        except Exception as twilio_error:
+            logger.error(f"❌ Twilio error ending call: {twilio_error}")
+            return {
+                "error": f"Twilio error: {str(twilio_error)}",
+                "status": "error"
+            }, 500
+        
+    except Exception as e:
+        logger.error(f"❌ Error ending real call: {e}")
+        return {"error": str(e), "status": "error"}, 500
 
 
 @app.route("/language", methods=["GET"])
@@ -1338,7 +1750,7 @@ if __name__ == "__main__":
 
         # Start Flask server
         logger.info("🌐 Starting Flask server...")
-        app.run(host="0.0.0.0", port=5001, debug=False)
+        app.run(host="0.0.0.0", port=5002, debug=False)
 
     except KeyboardInterrupt:
         logger.info("👋 Shutting down...")

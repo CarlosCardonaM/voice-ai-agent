@@ -50,18 +50,26 @@ function Monitor() {
   };
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: 'black',
+      p: 3
+    }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white' }}>
         Monitor
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
+      <Typography variant="body1" sx={{ mb: 4, color: 'grey.300' }}>
         Real-time monitoring of your Voice AI Agent performance and active calls
       </Typography>
 
       <Grid container spacing={3}>
         {/* Performance Overview */}
         <Grid item xs={12} md={8}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Performance Overview
@@ -117,7 +125,11 @@ function Monitor() {
 
         {/* System Status */}
         <Grid item xs={12} md={4}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
 {t('monitor.systemStatus')}
@@ -161,7 +173,11 @@ function Monitor() {
 
         {/* Active Calls */}
         <Grid item xs={12}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
 {t('monitor.activeCalls')}

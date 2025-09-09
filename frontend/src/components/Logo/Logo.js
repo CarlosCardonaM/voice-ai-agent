@@ -33,9 +33,11 @@ const Logo = ({ variant = 'default', size = 'medium', sx = {} }) => {
       sx={{ 
         display: 'flex', 
         alignItems: 'center',
-        fontFamily: 'Arial, Helvetica, sans-serif',
+        justifyContent: 'center',
+        fontFamily: 'Montserrat, Arial, Helvetica, sans-serif',
         fontWeight: 'normal',
         letterSpacing: 'normal',
+        width: '100%',
         ...getSizeStyles(),
         ...getVariantStyles(),
         ...sx 

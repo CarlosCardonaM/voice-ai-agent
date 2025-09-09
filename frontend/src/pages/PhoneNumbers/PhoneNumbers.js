@@ -184,12 +184,16 @@ function PhoneNumbers() {
   };
 
   return (
-    <Box>
-      <Typography variant="h4" component="h1" gutterBottom>
-        📞 {t('phoneNumbers.title')}
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: 'black',
+      p: 3
+    }}>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white' }}>
+        🗄️ Base de Datos
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-        {t('phoneNumbers.subtitle')}
+      <Typography variant="body1" sx={{ mb: 4, color: 'grey.300' }}>
+        Gestiona la base de datos de números telefónicos y contactos
       </Typography>
 
       {error && (
@@ -223,7 +227,11 @@ function PhoneNumbers() {
       </Box>
 
       {/* Tabla de números telefónicos */}
-      <Card>
+        <Card sx={{ 
+          bgcolor: 'grey.800',
+          border: '1px solid',
+          borderColor: 'grey.700'
+        }}>
         <CardContent>
           <TableContainer component={Paper} variant="outlined">
             <Table>

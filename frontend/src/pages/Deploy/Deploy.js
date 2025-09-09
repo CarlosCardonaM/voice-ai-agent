@@ -133,21 +133,29 @@ function Deploy() {
   };
 
   return (
-    <Box>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: 'black',
+      p: 3
+    }}>
       {/* Header */}
       <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
-          Deploy
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Deploy your Voice AI Agent to production and manage infrastructure
-        </Typography>
+      <Typography variant="h4" component="h1" gutterBottom sx={{ color: 'white' }}>
+        Deploy
+      </Typography>
+      <Typography variant="body1" sx={{ color: 'grey.300' }}>
+        Deploy your Voice AI Agent to production and manage infrastructure
+      </Typography>
       </Box>
 
       <Grid container spacing={3}>
         {/* Deployment Configuration */}
         <Grid item xs={12} md={4}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
                 Deployment Configuration
@@ -279,7 +287,11 @@ label={t('deploy.healthCheck')}
 
         {/* Deployment Progress */}
         <Grid item xs={12} md={8}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                 <Typography variant="h6">
@@ -341,7 +353,11 @@ label={t('deploy.healthCheck')}
 
         {/* Deployment Logs */}
         <Grid item xs={12}>
-          <Card>
+          <Card sx={{ 
+            bgcolor: 'grey.800',
+            border: '1px solid',
+            borderColor: 'grey.700'
+          }}>
             <CardContent>
               <Typography variant="h6" gutterBottom>
 {t('deploy.deploymentLogs')}

@@ -29,7 +29,7 @@ import {
   Phone as PhoneIcon,
 } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
-import LanguageSelector from '../LanguageSelector/LanguageSelector';
+import LanguageSelector from '../LanguageSelector/LanguageSelector.js';
 import Logo from '../Logo/Logo';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -39,7 +39,7 @@ const getMenuItems = (t) => [
   { text: 'Inicio', icon: <HomeIcon />, path: '/inicio' },
   { text: t('navigation.dashboard'), icon: <DashboardIcon />, path: '/dashboard' },
   { text: t('navigation.builder'), icon: <BuildIcon />, path: '/builder' },
-  { text: t('navigation.phoneNumbers'), icon: <PhoneIcon />, path: '/phone-numbers' },
+  { text: 'Base de Datos', icon: <PhoneIcon />, path: '/phone-numbers' },
   { text: t('navigation.testing'), icon: <TestingIcon />, path: '/testing' },
   { text: t('navigation.deploy'), icon: <DeployIcon />, path: '/deploy' },
   { text: t('navigation.monitor'), icon: <MonitorIcon />, path: '/monitor' },
@@ -64,13 +64,11 @@ function Layout({ children }) {
   const drawer = (
     <Box>
       {/* Logo and Title */}
-      <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+      <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
         <Logo size="small" variant="primary" />
-        <Box>
-          <Typography variant="caption" color="text.secondary">
-            Voice AI Agent Platform
-          </Typography>
-        </Box>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+          Voice AI Agent Platform
+        </Typography>
       </Box>
 
       <Divider />

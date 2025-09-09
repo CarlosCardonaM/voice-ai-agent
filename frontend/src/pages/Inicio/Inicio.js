@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Typography,
@@ -15,49 +16,54 @@ import {
 } from '@mui/icons-material';
 import apiService from '../../services/api';
 import { useLanguage } from '../../contexts/LanguageContext';
-import CallStats from '../../components/CallStats/CallStats';
 
 // Componente de acción rápida compacto para header
 const QuickActionButton = ({ title, icon, action, color }) => (
   <Grow in timeout={800}>
     <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        p: 2,
-        borderRadius: 2,
-        cursor: 'pointer',
-        transition: 'all 0.3s ease',
-        bgcolor: 'rgba(255,255,255,0.05)',
-        border: '1px solid rgba(255,255,255,0.1)',
-        minWidth: 120,
-        '&:hover': {
-          bgcolor: 'rgba(255,255,255,0.1)',
-          transform: 'translateY(-2px)',
-          border: `1px solid ${color}.main`,
-          '& .action-icon': {
-            transform: 'scale(1.1)',
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          p: 3,
+          borderRadius: 2,
+          cursor: 'pointer',
+          transition: 'all 0.3s ease',
+          bgcolor: 'grey.800',
+          border: '1px solid',
+          borderColor: 'grey.600',
+          minWidth: 140,
+          boxShadow: 1,
+          '&:hover': {
+            bgcolor: 'grey.700',
+            transform: 'translateY(-2px)',
+            boxShadow: 3,
+            '& .action-icon': {
+              transform: 'scale(1.05)',
+            }
           }
-        }
-      }}
+        }}
       onClick={action}
     >
       <Avatar 
         className="action-icon"
         sx={{ 
-          bgcolor: `${color}.main`, 
+          bgcolor: color, 
           color: 'white', 
-          width: 40, 
-          height: 40, 
-          mb: 1,
-          transition: 'all 0.3s ease',
-          boxShadow: `0 4px 12px ${color}.main}40`
+          width: 48, 
+          height: 48, 
+          mb: 2,
+          transition: 'all 0.3s ease'
         }}
       >
         {icon}
       </Avatar>
-      <Typography variant="body2" sx={{ fontWeight: 'bold', textAlign: 'center', color: 'white' }}>
+      <Typography variant="body1" sx={{ 
+        fontWeight: 600, 
+        textAlign: 'center', 
+        color: 'white',
+        fontSize: '0.9rem'
+      }}>
         {title}
       </Typography>
     </Box>
@@ -65,6 +71,7 @@ const QuickActionButton = ({ title, icon, action, color }) => (
 );
 
 function Inicio() {
+  const navigate = useNavigate();
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -129,29 +136,29 @@ function Inicio() {
       title: t('dashboard.startNewCall'),
       description: t('dashboard.startNewCallDesc'),
       icon: <PlayIcon />,
-      color: 'success',
-      action: () => console.log('Start new call'),
+      color: 'success.main',
+      action: () => navigate('/testing'),
     },
     {
       title: t('dashboard.configureAgent'),
       description: t('dashboard.configureAgentDesc'),
       icon: <BuildIcon />,
-      color: 'primary',
-      action: () => console.log('Configure agent'),
+      color: 'primary.main',
+      action: () => navigate('/builder'),
     },
     {
       title: t('dashboard.viewAnalytics'),
       description: t('dashboard.viewAnalyticsDesc'),
       icon: <SettingsIcon />,
-      color: 'info',
-      action: () => console.log('View analytics'),
+      color: 'warning.main',
+      action: () => navigate('/monitor'),
     },
     {
       title: t('dashboard.systemSettings'),
       description: t('dashboard.systemSettingsDesc'),
       icon: <SettingsIcon />,
-      color: 'warning',
-      action: () => console.log('System settings'),
+      color: 'info.main',
+      action: () => navigate('/settings'),
     },
   ];
 
@@ -169,18 +176,31 @@ function Inicio() {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Box sx={{ 
+      minHeight: '100vh', 
+      bgcolor: 'black',
+      p: 3
+    }}>
+      <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Header con Acciones Rápidas */}
       <Box sx={{ 
         mb: 4, 
-        p: 3, 
-        borderRadius: 3,
-        bgcolor: 'rgba(255,255,255,0.03)',
-        border: '1px solid rgba(255,255,255,0.1)'
+        p: 4, 
+        borderRadius: 2,
+        bgcolor: 'grey.900',
+        boxShadow: 2,
+        border: '1px solid',
+        borderColor: 'grey.700'
       }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <RocketIcon sx={{ color: 'primary.main', fontSize: 28 }} />
-          <Typography variant="h5" component="h2" sx={{ fontWeight: 'bold', color: 'white' }}>
+          <RocketIcon sx={{ 
+            color: 'primary.main', 
+            fontSize: 32
+          }} />
+          <Typography variant="h4" component="h2" sx={{ 
+            fontWeight: 'bold', 
+            color: 'white'
+          }}>
             {t('dashboard.quickActions')}
           </Typography>
         </Box>
@@ -203,13 +223,8 @@ function Inicio() {
         </Box>
       </Box>
 
-      {/* Estadísticas de Llamadas */}
-      <Box sx={{ mb: 4 }}>
-        <CallStats />
-      </Box>
-
-
-    </Container>
+      </Container>
+    </Box>
   );
 }
 

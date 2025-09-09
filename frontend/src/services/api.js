@@ -1,7 +1,7 @@
 // API Service Layer for Voice AI Agent
 // Connects React frontend to Python backend
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
 
 class VoiceAIApiService {
   constructor() {
@@ -47,6 +47,14 @@ class VoiceAIApiService {
   // Language Manager Status
   async getLanguageStatus() {
     return this.apiCall('/language');
+  }
+
+  // Update Agent Configuration
+  async updateAgentConfig(config) {
+    return this.apiCall('/update-agent-config', {
+      method: 'POST',
+      body: JSON.stringify(config),
+    });
   }
 
   // Call Statistics
@@ -247,13 +255,6 @@ class VoiceAIApiService {
     });
   }
 
-  // Update Agent Configuration
-  async updateAgentConfig(config) {
-    return this.apiCall('/api/config', {
-      method: 'PUT',
-      body: JSON.stringify(config),
-    });
-  }
 
   // Get Agent Configuration
   async getAgentConfig() {
@@ -328,6 +329,26 @@ class VoiceAIApiService {
   async initiateCall(numberId) {
     return this.apiCall(`/phone-numbers/${numberId}/call`, {
       method: 'POST',
+    });
+  }
+
+  // Real call methods
+  async makeRealCall(phoneNumber, config = {}) {
+    return this.apiCall('/real-call', {
+      method: 'POST',
+      body: JSON.stringify({
+        phone_number: phoneNumber,
+        ...config
+      }),
+    });
+  }
+
+  async endRealCall(callSid) {
+    return this.apiCall('/end-real-call', {
+      method: 'POST',
+      body: JSON.stringify({
+        call_sid: callSid
+      }),
     });
   }
 }
